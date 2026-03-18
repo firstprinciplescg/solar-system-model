@@ -449,6 +449,8 @@ const InfoModal = ({ obj, crossingTime, prevCrossingTime, startTime, onClose }) 
 export default function SolarSystemScale() {
   const containerRef = useRef(null);
   const progressRef = useRef(null);
+  const progressBarRef = useRef(null);
+  const isDraggingProgress = useRef(false);
   const startTimeRef = useRef(null);
   const crossingsRef = useRef(new Map());
   const rafRef = useRef(null);
@@ -545,6 +547,44 @@ export default function SolarSystemScale() {
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Click/drag on progress bar to navigate
+  useEffect(() => {
+    const bar = progressBarRef.current;
+    const el = containerRef.current;
+    if (!bar || !el) return;
+
+    const jumpToPosition = (clientX) => {
+      const rect = bar.getBoundingClientRect();
+      const fraction = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const endCardCenter = auToPx(HELIOPAUSE_AU) + 800 + (END_CARD_WIDTH - 1200) / 2;
+      const maxScroll = endCardCenter - el.clientWidth / 2;
+      el.scrollLeft = fraction * maxScroll;
+    };
+
+    const onMouseDown = (e) => {
+      e.preventDefault();
+      isDraggingProgress.current = true;
+      jumpToPosition(e.clientX);
+    };
+    const onMouseMove = (e) => {
+      if (!isDraggingProgress.current) return;
+      e.preventDefault();
+      jumpToPosition(e.clientX);
+    };
+    const onMouseUp = () => {
+      isDraggingProgress.current = false;
+    };
+
+    bar.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      bar.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, []);
+
   const getCrossing = (id) => crossingsRef.current.get(id) ?? null;
   const getPrevCrossing = (id) => {
     const idx = ALL_POSITIONED.findIndex(o => o.id === id);
@@ -616,10 +656,13 @@ export default function SolarSystemScale() {
       </div>
 
       {/* ── Progress bar ── */}
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 2, zIndex: 51, background: "#ffffff06" }}>
+      <div ref={progressBarRef} style={{
+        position: "fixed", top: 0, left: 0, right: 0, height: 6, zIndex: 51,
+        background: "#ffffff0a", cursor: "pointer"
+      }}>
         <div ref={progressRef} style={{
           height: "100%", background: `linear-gradient(90deg, #FDB813, #5B9BD5, #3F54BA)`,
-          width: "0%",
+          width: "0%", pointerEvents: "none",
         }} />
       </div>
 
@@ -853,6 +896,17 @@ export default function SolarSystemScale() {
                         </div>
                       );
                     })}
+                  </div>
+
+                  <div style={{
+                    marginTop: 24, padding: "14px 20px",
+                    background: "#ffffff06", borderRadius: 8,
+                    border: "1px solid #ffffff0a",
+                    textAlign: "center"
+                  }}>
+                    <div style={{ fontSize: 13, color: "#ffffff55", lineHeight: 1.6 }}>
+                      Want to revisit anything? Click or drag the progress bar at the top of the screen to jump to any point in the model.
+                    </div>
                   </div>
 
                   <div style={{
