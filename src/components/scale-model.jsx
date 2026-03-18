@@ -448,6 +448,7 @@ const InfoModal = ({ obj, crossingTime, prevCrossingTime, startTime, onClose }) 
 // ══════════════════════════════════════════════════════════
 export default function SolarSystemScale() {
   const containerRef = useRef(null);
+  const progressRef = useRef(null);
   const startTimeRef = useRef(null);
   const crossingsRef = useRef(new Map());
   const rafRef = useRef(null);
@@ -470,6 +471,11 @@ export default function SolarSystemScale() {
       const sx = el.scrollLeft;
       const au = Math.max(0, (sx - LEFT_PAD) / PX_PER_AU);
       const vw = el.clientWidth;
+
+      // Update progress bar directly (bypasses React for smooth animation)
+      if (progressRef.current) {
+        progressRef.current.style.width = `${Math.min(100, (au / HELIOPAUSE_AU) * 100)}%`;
+      }
 
       // Start timer on first meaningful scroll
       if (sx > 10 && !startTimeRef.current) {
@@ -611,10 +617,9 @@ export default function SolarSystemScale() {
 
       {/* ── Progress bar ── */}
       <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 2, zIndex: 51, background: "#ffffff06" }}>
-        <div style={{
+        <div ref={progressRef} style={{
           height: "100%", background: `linear-gradient(90deg, #FDB813, #5B9BD5, #3F54BA)`,
-          width: `${Math.min(100, (currentAU / HELIOPAUSE_AU) * 100)}%`,
-          transition: "width 0.3s"
+          width: "0%",
         }} />
       </div>
 
