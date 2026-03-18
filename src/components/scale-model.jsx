@@ -309,14 +309,14 @@ const ObjectMarker = ({ obj, onClick, crossingTime, prevCrossingTime, isSelected
         position: "absolute", bottom: displaySize / 2 + 88, left: "50%", transform: "translateX(-50%)",
         textAlign: "center", whiteSpace: "nowrap"
       }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: obj.color, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 0.5 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: obj.color, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 0.5 }}>
           {obj.name}
         </div>
-        <div style={{ fontSize: 9, color: "#ffffff33", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>
+        <div style={{ fontSize: 11, color: "#ffffff55", fontFamily: "'JetBrains Mono', monospace", marginTop: 3 }}>
           {obj.au > 0 ? `${obj.au} AU` : "0 AU"}
         </div>
         {isSubPixel && (
-          <div style={{ fontSize: 8, color: "#ffffff1a", fontFamily: "'JetBrains Mono', monospace", marginTop: 1 }}>
+          <div style={{ fontSize: 10, color: "#ffffff33", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>
             {truePx < 1 ? "sub-pixel" : `${truePx.toFixed(1)}px true`}
           </div>
         )}
@@ -328,11 +328,11 @@ const ObjectMarker = ({ obj, onClick, crossingTime, prevCrossingTime, isSelected
           position: "absolute", top: displaySize / 2 + 88, left: "50%", transform: "translateX(-50%)",
           textAlign: "center", whiteSpace: "nowrap"
         }}>
-          <div style={{ fontSize: 8, color: "#ffffff22", fontFamily: "'JetBrains Mono', monospace" }}>
+          <div style={{ fontSize: 10, color: "#ffffff44", fontFamily: "'JetBrains Mono', monospace" }}>
             reached in {formatTime(crossingTime)}
           </div>
           {prevCrossingTime != null && (
-            <div style={{ fontSize: 8, color: "#ffffff15", fontFamily: "'JetBrains Mono', monospace", marginTop: 1 }}>
+            <div style={{ fontSize: 10, color: "#ffffff2a", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>
               {formatTime(crossingTime - prevCrossingTime)} from prev
             </div>
           )}
@@ -722,13 +722,13 @@ export default function SolarSystemScale() {
             <div key={i} style={{
               position: "absolute", left: auToPx(vt.au), top: "50%",
               transform: "translate(-50%, -50%)",
-              textAlign: "center", maxWidth: 480, padding: "0 20px"
+              textAlign: "center", maxWidth: 520, padding: "0 20px"
             }}>
-              <div style={{ fontSize: 20, color: "#ffffff44", lineHeight: 1.6, fontWeight: 300, fontStyle: "italic" }}>
+              <div style={{ fontSize: 24, color: "#ffffff66", lineHeight: 1.6, fontWeight: 300, fontStyle: "italic" }}>
                 {vt.text}
               </div>
               {vt.sub && (
-                <div style={{ fontSize: 14, color: "#ffffff28", lineHeight: 1.5, marginTop: 10 }}>
+                <div style={{ fontSize: 16, color: "#ffffff44", lineHeight: 1.5, marginTop: 12 }}>
                   {vt.sub}
                 </div>
               )}
@@ -749,21 +749,21 @@ export default function SolarSystemScale() {
               opacity: reachedEnd ? 1 : 0.15
             }}>
               <div style={{
-                fontSize: 11, letterSpacing: 4, color: "#FF444488",
+                fontSize: 14, letterSpacing: 4, color: "#FF4444aa",
                 fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase",
-                marginBottom: 12
+                marginBottom: 14
               }}>
                 Beyond the Heliopause
               </div>
 
               <h2 style={{
-                fontSize: 26, fontWeight: 700, margin: "0 0 8px",
+                fontSize: 32, fontWeight: 700, margin: "0 0 10px",
                 color: "#ffffffdd", fontFamily: "'Space Grotesk', sans-serif"
               }}>
                 You've left the Sun's domain.
               </h2>
 
-              <p style={{ fontSize: 13, color: "#ffffff55", lineHeight: 1.6, margin: "0 0 28px" }}>
+              <p style={{ fontSize: 16, color: "#ffffff66", lineHeight: 1.6, margin: "0 0 28px" }}>
                 Interstellar space begins here. Everything the Sun touches is behind you.
               </p>
 
@@ -773,19 +773,19 @@ export default function SolarSystemScale() {
                     background: "#ffffff06", borderRadius: 10, padding: "20px 24px",
                     border: "1px solid #ffffff0a", marginBottom: 24
                   }}>
-                    <div style={{ fontSize: 10, letterSpacing: 2, color: "#ffffff33", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", marginBottom: 12 }}>
+                    <div style={{ fontSize: 12, letterSpacing: 2, color: "#ffffff44", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", marginBottom: 12 }}>
                       Your journey
                     </div>
-                    <div style={{ fontSize: 28, fontWeight: 700, color: "#FDB813", fontFamily: "'JetBrains Mono', monospace", marginBottom: 4 }}>
+                    <div style={{ fontSize: 34, fontWeight: 700, color: "#FDB813", fontFamily: "'JetBrains Mono', monospace", marginBottom: 6 }}>
                       {formatTime(endTime)}
                     </div>
-                    <div style={{ fontSize: 11, color: "#ffffff44" }}>
+                    <div style={{ fontSize: 14, color: "#ffffff55" }}>
                       to scroll {HELIOPAUSE_AU} AU at an average of {(HELIOPAUSE_AU / endTime * 60).toFixed(1)} AU/min
                     </div>
                   </div>
 
                   <div style={{
-                    fontSize: 10, letterSpacing: 2, color: "#ffffff25",
+                    fontSize: 13, letterSpacing: 2, color: "#ffffff44",
                     fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase",
                     marginBottom: 16
                   }}>
@@ -812,18 +812,18 @@ export default function SolarSystemScale() {
                             onMouseLeave={e => { e.currentTarget.style.background = i % 2 === 0 ? "#ffffff03" : "transparent"; }}
                           >
                             <div>
-                              <div style={{ fontSize: 12, color: "#ffffffbb", fontWeight: 500 }}>
+                              <div style={{ fontSize: 15, color: "#ffffffcc", fontWeight: 500 }}>
                                 {p.name}
-                                <span style={{ fontSize: 9, color: "#ffffff33", marginLeft: 8 }}>
+                                <span style={{ fontSize: 11, color: "#ffffff44", marginLeft: 8 }}>
                                   {isExpanded ? "▾" : "▸"}
                                 </span>
                               </div>
-                              <div style={{ fontSize: 9, color: "#ffffff33", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>
+                              <div style={{ fontSize: 12, color: "#ffffff55", fontFamily: "'JetBrains Mono', monospace", marginTop: 3 }}>
                                 {p.au.toLocaleString()} AU · {p.note}
                               </div>
                             </div>
                             <div style={{
-                              fontSize: 13, fontWeight: 600, color: t > 86400 * 365.25 ? "#FF6B6B" : t > 86400 ? "#FF8C42" : "#FDB813",
+                              fontSize: 16, fontWeight: 600, color: t > 86400 * 365.25 ? "#FF6B6B" : t > 86400 ? "#FF8C42" : "#FDB813",
                               fontFamily: "'JetBrains Mono', monospace",
                               whiteSpace: "nowrap", marginLeft: 16,
                               textAlign: "right"
@@ -841,7 +841,7 @@ export default function SolarSystemScale() {
                             }}>
                               {p.facts.map((fact, fi) => (
                                 <div key={fi} style={{
-                                  fontSize: 11, color: "#ffffff77", lineHeight: 1.5,
+                                  fontSize: 13, color: "#ffffff88", lineHeight: 1.5,
                                   fontFamily: "'Space Grotesk', sans-serif",
                                   paddingLeft: 10, borderLeft: "2px solid #ffffff1a"
                                 }}>
@@ -859,7 +859,7 @@ export default function SolarSystemScale() {
                     marginTop: 32, padding: "24px",
                     textAlign: "center"
                   }}>
-                    <div style={{ fontSize: 20, color: "#ffffff88", fontStyle: "italic", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    <div style={{ fontSize: 26, color: "#ffffffaa", fontStyle: "italic", fontFamily: "'Space Grotesk', sans-serif" }}>
                       Space is big. Really big.
                     </div>
                   </div>
