@@ -19,20 +19,105 @@ const kmToPxDia = (km) => km / EARTH_DIA_KM;
 // SOLAR SYSTEM DATA
 // ══════════════════════════════════════════════════════════
 const BODIES = [
-  { id: "sun", name: "The Sun", type: "star", au: 0, diam: 1392700, color: "#FDB813", desc: "Our star. 99.86% of the solar system's total mass. A medium-sized yellow dwarf that has burned for 4.6 billion years." },
-  { id: "mercury", name: "Mercury", type: "planet", au: 0.387, diam: 4879, color: "#B5A7A7", desc: "Smallest planet. No atmosphere to speak of. Surface temperatures swing from −180°C to 430°C in the same day." },
-  { id: "venus", name: "Venus", type: "planet", au: 0.723, diam: 12104, color: "#E8CDA0", desc: "Hottest planet, thanks to a runaway greenhouse effect. Its thick atmosphere rains sulfuric acid. It rotates backwards." },
-  { id: "earth", name: "Earth", type: "planet", au: 1.0, diam: 12742, color: "#5B9BD5", desc: "Home. The only confirmed harbor of life in the universe. One pixel wide at this scale." },
-  { id: "mars", name: "Mars", type: "planet", au: 1.524, diam: 6779, color: "#C1440E", desc: "The Red Planet. Home to Olympus Mons, the tallest volcano in the solar system at 21.9 km high." },
-  { id: "ceres", name: "Ceres", type: "dwarf", au: 2.77, diam: 939, color: "#8B8680", desc: "The largest object in the asteroid belt and the closest dwarf planet to the Sun. May have a subsurface ocean." },
-  { id: "jupiter", name: "Jupiter", type: "planet", au: 5.203, diam: 139820, color: "#C88B3A", desc: "Largest planet. 11 Earths wide. Its Great Red Spot is a storm bigger than Earth that has raged for centuries." },
-  { id: "saturn", name: "Saturn", type: "planet", au: 9.537, diam: 116460, color: "#E3D5A3", desc: "Its ring system spans 282,000 km but is only about 10 meters thick. The planet itself is less dense than water.", hasRings: true, ringSpan: 280000 },
-  { id: "uranus", name: "Uranus", type: "planet", au: 19.19, diam: 50724, color: "#7EC8E3", desc: "Tilted 98° on its axis. Its moons may harbor subsurface liquid water oceans containing the building blocks of life: water, carbon, nitrogen, and energy from tidal heating." },
-  { id: "neptune", name: "Neptune", type: "planet", au: 30.07, diam: 49244, color: "#3F54BA", desc: "Windiest planet, with gusts reaching 2,100 km/h. Its gravity sculpts the inner edge of the Kuiper Belt." },
-  { id: "pluto", name: "Pluto", type: "dwarf", au: 39.48, diam: 2377, color: "#D2B48C", desc: "Reclassified as a dwarf planet in 2006. Has a heart-shaped plain of nitrogen ice, five moons, and a thin atmosphere that freezes and collapses as it orbits further from the Sun." },
-  { id: "haumea", name: "Haumea", type: "dwarf", au: 43.13, diam: 1560, color: "#E0D8CC", desc: "Egg-shaped. Spins so fast (3.9-hour day) it has stretched itself into an ellipsoid. One of the few objects beyond Neptune known to have rings." },
-  { id: "makemake", name: "Makemake", type: "dwarf", au: 45.79, diam: 1430, color: "#D4A574", desc: "Second-brightest Kuiper Belt object after Pluto. Surface temperature around 30 K (−243°C). Has one known moon." },
-  { id: "eris", name: "Eris", type: "dwarf", au: 67.78, diam: 2326, color: "#C8C8C8", desc: "Most massive known dwarf planet. Its discovery in 2005 directly triggered the debate that reclassified Pluto. Named after the Greek goddess of discord." },
+  { id: "sun", name: "The Sun", type: "star", au: 0, diam: 1392700, color: "#FDB813",
+    desc: "Our star. 99.86% of the solar system's total mass. A medium-sized yellow dwarf that has burned for 4.6 billion years.",
+    facts: [
+      "The Sun converts about 600 million tons of hydrogen into helium every second through nuclear fusion.",
+      "Its core temperature reaches 15 million °C — hot enough to sustain thermonuclear reactions for another 5 billion years.",
+      "A photon generated in the Sun's core takes an average of 170,000 years to reach the surface, then just 8 minutes to reach Earth.",
+    ]},
+  { id: "mercury", name: "Mercury", type: "planet", au: 0.387, diam: 4879, color: "#B5A7A7",
+    desc: "Smallest planet. No atmosphere to speak of. Surface temperatures swing from −180°C to 430°C in the same day.",
+    facts: [
+      "Mercury's iron core makes up about 85% of its radius — proportionally the largest core of any planet in the solar system.",
+      "Despite being closest to the Sun, it has ice deposits in permanently shadowed craters near its poles.",
+      "A single solar day on Mercury lasts 176 Earth days — longer than its 88-day year.",
+    ]},
+  { id: "venus", name: "Venus", type: "planet", au: 0.723, diam: 12104, color: "#E8CDA0",
+    desc: "Hottest planet, thanks to a runaway greenhouse effect. Its thick atmosphere rains sulfuric acid. It rotates backwards.",
+    facts: [
+      "Venus's surface pressure is 92 times Earth's — equivalent to being 900 meters underwater.",
+      "Its clouds reflect so much sunlight that Venus is the brightest natural object in the night sky after the Moon.",
+      "A day on Venus (243 Earth days) is longer than its year (225 Earth days). It's the only planet where this is true.",
+    ]},
+  { id: "earth", name: "Earth", type: "planet", au: 1.0, diam: 12742, color: "#5B9BD5",
+    desc: "Home. The only confirmed harbor of life in the universe. One pixel wide at this scale.",
+    facts: [
+      "Earth is the densest planet in the solar system at 5.51 g/cm³, thanks to its heavy iron-nickel core.",
+      "71% of Earth's surface is water, but all that water would form a sphere only 1,385 km across — barely visible at this scale.",
+      "Earth's magnetic field extends 65,000 km into space, shielding the atmosphere from solar wind that would otherwise strip it away.",
+    ]},
+  { id: "mars", name: "Mars", type: "planet", au: 1.524, diam: 6779, color: "#C1440E",
+    desc: "The Red Planet. Home to Olympus Mons, the tallest volcano in the solar system at 21.9 km high.",
+    facts: [
+      "Mars has the largest dust storms in the solar system — they can engulf the entire planet and last for months.",
+      "Valles Marineris is a canyon system stretching 4,000 km long and 7 km deep. The Grand Canyon would be a side trench.",
+      "Mars once had a magnetic field and liquid surface water. Evidence suggests it lost its atmosphere after its core cooled and the field collapsed.",
+    ]},
+  { id: "ceres", name: "Ceres", type: "dwarf", au: 2.77, diam: 939, color: "#8B8680",
+    desc: "The largest object in the asteroid belt and the closest dwarf planet to the Sun. May have a subsurface ocean.",
+    facts: [
+      "Ceres contains about one-third of the total mass of the entire asteroid belt.",
+      "NASA's Dawn spacecraft found bright salt deposits in Occator Crater — evidence of briny water reaching the surface as recently as a few million years ago.",
+      "Ceres may have more fresh water than all of Earth's rivers, lakes, and aquifers combined, locked in a subsurface ocean.",
+    ]},
+  { id: "jupiter", name: "Jupiter", type: "planet", au: 5.203, diam: 139820, color: "#C88B3A",
+    desc: "Largest planet. 11 Earths wide. Its Great Red Spot is a storm bigger than Earth that has raged for centuries.",
+    facts: [
+      "Jupiter's magnetic field is 20,000 times stronger than Earth's and creates radiation belts that would deliver a fatal dose to an unshielded human in minutes.",
+      "Its moon Europa almost certainly has a global saltwater ocean beneath its ice crust, making it one of the best candidates for extraterrestrial life.",
+      "Jupiter acts as a cosmic shield — its gravity deflects or captures comets and asteroids that might otherwise hit the inner planets.",
+    ]},
+  { id: "saturn", name: "Saturn", type: "planet", au: 9.537, diam: 116460, color: "#E3D5A3",
+    desc: "Its ring system spans 282,000 km but is only about 10 meters thick. The planet itself is less dense than water.",
+    hasRings: true, ringSpan: 280000,
+    facts: [
+      "Saturn's rings are made of billions of chunks of ice and rock, ranging from dust grains to pieces the size of houses.",
+      "Its moon Titan has a thick nitrogen atmosphere, liquid methane lakes, and rain — the only body besides Earth with stable surface liquids.",
+      "Saturn's hexagonal storm at its north pole is 30,000 km across. Each side is longer than Earth's diameter. No one fully understands why it's hexagonal.",
+    ]},
+  { id: "uranus", name: "Uranus", type: "planet", au: 19.19, diam: 50724, color: "#7EC8E3",
+    desc: "Tilted 98° on its axis. Its moons may harbor subsurface liquid water oceans containing the building blocks of life: water, carbon, nitrogen, and energy from tidal heating.",
+    facts: [
+      "Uranus was likely knocked on its side by a collision with an Earth-sized object early in the solar system's history.",
+      "Its moon Miranda has a cliff face 20 km high — Verona Rupes — the tallest known cliff in the solar system.",
+      "Uranus and Neptune may contain vast oceans of liquid diamond under extreme pressures, with solid diamond icebergs floating on top.",
+    ]},
+  { id: "neptune", name: "Neptune", type: "planet", au: 30.07, diam: 49244, color: "#3F54BA",
+    desc: "Windiest planet, with gusts reaching 2,100 km/h. Its gravity sculpts the inner edge of the Kuiper Belt.",
+    facts: [
+      "Neptune radiates 2.6 times more energy than it receives from the Sun. The source of this internal heat is still not fully understood.",
+      "Its moon Triton orbits backwards (retrograde) and is slowly spiraling inward — in about 3.6 billion years, it will be torn apart into a ring system.",
+      "Neptune was the first planet found by mathematical prediction rather than observation, calculated by Urbain Le Verrier in 1846.",
+    ]},
+  { id: "pluto", name: "Pluto", type: "dwarf", au: 39.48, diam: 2377, color: "#D2B48C",
+    desc: "Reclassified as a dwarf planet in 2006. Has a heart-shaped plain of nitrogen ice, five moons, and a thin atmosphere that freezes and collapses as it orbits further from the Sun.",
+    facts: [
+      "Pluto's heart-shaped region (Tombaugh Regio) is a plain of nitrogen ice that slowly flows like glaciers on Earth, renewing the surface.",
+      "Pluto and its largest moon Charon are tidally locked to each other — the same faces always point at one another, like a cosmic slow dance.",
+      "From Pluto's surface, the Sun would appear as an extremely bright star — about 1,000 times brighter than Earth's full moon, but just a point of light.",
+    ]},
+  { id: "haumea", name: "Haumea", type: "dwarf", au: 43.13, diam: 1560, color: "#E0D8CC",
+    desc: "Egg-shaped. Spins so fast (3.9-hour day) it has stretched itself into an ellipsoid. One of the few objects beyond Neptune known to have rings.",
+    facts: [
+      "Haumea's surface is almost pure crystalline water ice — unusual at its distance, where radiation should have degraded the crystals long ago.",
+      "It has two small moons, Hi'iaka and Namaka, named after the Hawaiian goddess Haumea's daughters.",
+      "Haumea's ring was discovered during a stellar occultation in 2017 — making it the first known trans-Neptunian object with a ring system.",
+    ]},
+  { id: "makemake", name: "Makemake", type: "dwarf", au: 45.79, diam: 1430, color: "#D4A574",
+    desc: "Second-brightest Kuiper Belt object after Pluto. Surface temperature around 30 K (−243°C). Has one known moon.",
+    facts: [
+      "Makemake was discovered in 2005, just after Easter, earning its preliminary nickname 'Easterbunny' before being officially named.",
+      "Unlike Pluto, Makemake appears to have no significant atmosphere — a stellar occultation in 2011 showed no atmospheric signature.",
+      "Its surface is covered in frozen methane and ethane, which give it a reddish-brown color similar to Pluto.",
+    ]},
+  { id: "eris", name: "Eris", type: "dwarf", au: 67.78, diam: 2326, color: "#C8C8C8",
+    desc: "Most massive known dwarf planet. Its discovery in 2005 directly triggered the debate that reclassified Pluto. Named after the Greek goddess of discord.",
+    facts: [
+      "Eris is 27% more massive than Pluto despite being roughly the same size — it's extraordinarily dense for an icy body.",
+      "Its surface is one of the most reflective in the solar system, likely coated in a thin layer of frozen nitrogen that re-freezes from its atmosphere.",
+      "At its farthest, Eris reaches 97.5 AU from the Sun. Its 559-year orbit takes it nearly to the edge of the scattered disc.",
+    ]},
 ];
 
 const REGIONS = [
@@ -42,8 +127,20 @@ const REGIONS = [
 ];
 
 const BOUNDARIES = [
-  { id: "term_shock", name: "Termination Shock", au: 94, color: "#FF6B6B", desc: "The solar wind abruptly drops from supersonic to subsonic speed. Voyager 1 crossed it in December 2004 at 94 AU." },
-  { id: "heliopause", name: "Heliopause", au: 123, color: "#FF4444", desc: "The outermost edge of the Sun's influence. Beyond here, interstellar space begins. Voyager 1 crossed it on August 25, 2012." },
+  { id: "term_shock", name: "Termination Shock", au: 94, color: "#FF6B6B",
+    desc: "The solar wind abruptly drops from supersonic to subsonic speed. Voyager 1 crossed it in December 2004 at 94 AU.",
+    facts: [
+      "The termination shock is not a fixed boundary — it pulses in and out depending on solar activity, shifting by as much as 10 AU.",
+      "When Voyager 1 crossed it, instruments detected a sudden 10-fold increase in the density of charged particles.",
+      "The solar wind drops from about 400 km/s to under 100 km/s at this boundary — like a supersonic jet hitting a wall of air.",
+    ]},
+  { id: "heliopause", name: "Heliopause", au: 123, color: "#FF4444",
+    desc: "The outermost edge of the Sun's influence. Beyond here, interstellar space begins. Voyager 1 crossed it on August 25, 2012.",
+    facts: [
+      "When Voyager 1 crossed the heliopause, its plasma wave instrument detected a 40-fold jump in plasma density — confirming it had entered interstellar space.",
+      "The heliopause is not spherical. It's compressed on the side facing the direction the Sun moves through the galaxy and stretched into a long tail behind.",
+      "Even beyond the heliopause, the Sun's gravity still dominates. True gravitational escape doesn't happen until the outer Oort Cloud, around 100,000 AU.",
+    ]},
 ];
 
 // Everything that has a position, sorted for crossing detection
@@ -69,14 +166,54 @@ const VOID_TEXTS = [
 ];
 
 const PROJECTIONS = [
-  { name: "Sedna", au: 506, note: "Distant dwarf planet, 11,400-year orbit" },
-  { name: "Inner Oort Cloud", au: 2000, note: "Source of Halley-type comets" },
-  { name: "Outer Oort Cloud edge", au: 100000, note: "~1 trillion comets, edge of the Sun's gravity" },
-  { name: "Proxima Centauri", au: 268332, note: "Nearest star system — 4.24 light-years" },
-  { name: "Barnard's Star", au: 377098, note: "Second nearest — 5.96 light-years" },
-  { name: "Epsilon Eridani", au: 662350, note: "Sun-like star with exoplanets — 10.5 light-years" },
-  { name: "Galactic Center", au: 1.644e9, note: "Center of the Milky Way — 26,000 light-years" },
-  { name: "Andromeda Galaxy", au: 1.604e11, note: "Nearest large galaxy — 2.5 million light-years" },
+  { name: "Sedna", au: 506, note: "Distant dwarf planet, 11,400-year orbit",
+    facts: [
+      "Sedna's orbit is one of the most extreme known — it ranges from 76 AU at its closest to 937 AU at its farthest.",
+      "Its deep red color makes it one of the reddest objects in the solar system, likely due to hydrocarbon deposits from billions of years of radiation.",
+      "Sedna takes 11,400 years to complete one orbit. The last time it was this close to the Sun, humans were painting caves in Europe.",
+    ]},
+  { name: "Inner Oort Cloud", au: 2000, note: "Source of Halley-type comets",
+    facts: [
+      "Also called the Hills Cloud, this disc-shaped region may contain trillions of icy bodies too faint to detect directly.",
+      "Comets from this region take 200–10,000 years to orbit the Sun. Halley's Comet likely originated here.",
+      "The inner Oort Cloud was probably formed from planetesimals ejected by Jupiter and Saturn during the early solar system.",
+    ]},
+  { name: "Outer Oort Cloud edge", au: 100000, note: "~1 trillion comets, edge of the Sun's gravity",
+    facts: [
+      "The Oort Cloud is a spherical shell of icy bodies so loosely bound that passing stars regularly perturb their orbits, sending some sunward as long-period comets.",
+      "Despite containing perhaps a trillion objects, the total mass is estimated at only 5–100 Earth masses — spread across an unimaginable volume.",
+      "At 100,000 AU, the Sun's gravity is so weak that the galactic tide — the Milky Way's own gravitational pull — shapes the orbits of objects here.",
+    ]},
+  { name: "Proxima Centauri", au: 268332, note: "Nearest star system — 4.24 light-years",
+    facts: [
+      "Proxima Centauri is a red dwarf so dim that despite being the nearest star, it's invisible to the naked eye.",
+      "It has at least two confirmed exoplanets. Proxima b orbits in the habitable zone — but intense stellar flares may have stripped its atmosphere.",
+      "At the speed of Voyager 1 (61,000 km/h), reaching Proxima Centauri would take about 73,000 years.",
+    ]},
+  { name: "Barnard's Star", au: 377098, note: "Second nearest — 5.96 light-years",
+    facts: [
+      "Barnard's Star has the fastest apparent motion of any star in Earth's sky, crossing the width of a full moon every 180 years.",
+      "It's an ancient red dwarf, estimated at 10 billion years old — more than twice the age of our Sun.",
+      "A candidate exoplanet (Barnard b) was announced in 2018 — a frozen super-Earth at about 0.4 AU from the star.",
+    ]},
+  { name: "Epsilon Eridani", au: 662350, note: "Sun-like star with exoplanets — 10.5 light-years",
+    facts: [
+      "Epsilon Eridani is one of the most Sun-like nearby stars, making it a frequent target in searches for extraterrestrial intelligence (SETI).",
+      "It has at least one confirmed planet and two asteroid/debris belts — a young solar system that may still be forming planets.",
+      "At only 800 million years old, it offers a window into what our own solar system may have looked like in its youth.",
+    ]},
+  { name: "Galactic Center", au: 1.644e9, note: "Center of the Milky Way — 26,000 light-years",
+    facts: [
+      "At the center sits Sagittarius A*, a supermassive black hole 4 million times the mass of our Sun.",
+      "The region is so dense with stars that if Earth orbited there, the night sky would glow with millions of stars brighter than Sirius.",
+      "We can't see the galactic center in visible light — it's hidden behind thick clouds of interstellar dust. We observe it in radio, infrared, and X-rays.",
+    ]},
+  { name: "Andromeda Galaxy", au: 1.604e11, note: "Nearest large galaxy — 2.5 million light-years",
+    facts: [
+      "Andromeda contains roughly 1 trillion stars — about twice as many as the Milky Way.",
+      "It's approaching us at 110 km/s. In about 4.5 billion years, the two galaxies will collide and merge into a single giant elliptical galaxy.",
+      "The light you see from Andromeda left 2.5 million years ago, when early Homo habilis was just beginning to use stone tools on Earth.",
+    ]},
 ];
 
 // ══════════════════════════════════════════════════════════
@@ -89,7 +226,7 @@ const formatTime = (s) => {
   if (s < 3600) { const m = s / 60; return `${m < 10 ? m.toFixed(1) : Math.round(m)} minute${Math.round(m) !== 1 ? "s" : ""}`; }
   if (s < 86400) { const h = s / 3600; return `${h < 10 ? h.toFixed(1) : Math.round(h)} hour${Math.round(h) !== 1 ? "s" : ""}`; }
   if (s < 86400 * 365.25) { const d = s / 86400; return `${d < 10 ? d.toFixed(1) : Math.round(d)} day${Math.round(d) !== 1 ? "s" : ""}`; }
-  if (s < 86400 * 365.25 * 100) { const y = s / (86400 * 365.25); return `${y < 10 ? y.toFixed(1) : Math.round(y)} year${Math.round(y) !== 1 ? "s" : ""}`; }
+  if (s < 86400 * 365.25 * 1000) { const y = s / (86400 * 365.25); return `${y < 10 ? y.toFixed(1) : Math.round(y).toLocaleString()} year${Math.round(y) !== 1 ? "s" : ""}`; }
   if (s < 86400 * 365.25 * 1e6) { const ky = s / (86400 * 365.25 * 1000); return `${ky < 10 ? ky.toFixed(1) : Math.round(ky).toLocaleString()} thousand years`; }
   if (s < 86400 * 365.25 * 1e9) { const my = s / (86400 * 365.25 * 1e6); return `${my < 10 ? my.toFixed(1) : Math.round(my).toLocaleString()} million years`; }
   const by = s / (86400 * 365.25 * 1e9);
@@ -209,8 +346,6 @@ const InfoModal = ({ obj, crossingTime, prevCrossingTime, startTime, onClose }) 
   if (!obj) return null;
   const dist = formatDist(obj.au);
   const truePx = obj.diam ? kmToPxDia(obj.diam) : null;
-  const elapsed = startTime ? (Date.now() - startTime) / 1000 : null;
-  const speed = elapsed && elapsed > 0 ? (HELIOPAUSE_AU * PX_PER_AU) / elapsed : null;
 
   return (
     <div onClick={onClose} style={{
@@ -220,9 +355,9 @@ const InfoModal = ({ obj, crossingTime, prevCrossingTime, startTime, onClose }) 
     }}>
       <div onClick={e => e.stopPropagation()} style={{
         background: "#0a0a12f8", border: `1px solid ${obj.color}33`,
-        borderRadius: 12, padding: "28px 32px", maxWidth: 420, width: "90%",
+        borderRadius: 12, padding: "28px 32px", maxWidth: 460, width: "90%",
         boxShadow: `0 20px 60px #00000099, 0 0 40px ${obj.color}08`,
-        cursor: "default"
+        cursor: "default", maxHeight: "85vh", overflowY: "auto"
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: obj.color, fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -240,6 +375,22 @@ const InfoModal = ({ obj, crossingTime, prevCrossingTime, startTime, onClose }) 
         <p style={{ fontSize: 13, color: "#ffffffbb", lineHeight: 1.65, margin: "12px 0 16px", fontFamily: "'Space Grotesk', sans-serif" }}>
           {obj.desc}
         </p>
+
+        {obj.facts && obj.facts.length > 0 && (
+          <div style={{ borderTop: "1px solid #ffffff0a", paddingTop: 14, marginBottom: 14 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {obj.facts.map((fact, i) => (
+                <div key={i} style={{
+                  fontSize: 12, color: "#ffffff88", lineHeight: 1.55,
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  paddingLeft: 12, borderLeft: `2px solid ${obj.color}33`
+                }}>
+                  {fact}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div style={{ borderTop: "1px solid #ffffff0a", paddingTop: 14, marginBottom: 14 }}>
           <div style={{ fontSize: 10, color: "#ffffff25", textTransform: "uppercase", letterSpacing: 2, fontFamily: "'JetBrains Mono', monospace", marginBottom: 8 }}>
@@ -307,6 +458,7 @@ export default function SolarSystemScale() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
   const [reachedEnd, setReachedEnd] = useState(false);
+  const [expandedProjection, setExpandedProjection] = useState(null);
   const [, forceUpdate] = useState(0);
 
   // Animation loop
@@ -370,6 +522,21 @@ export default function SolarSystemScale() {
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  // Clamp scroll so end card centers in viewport
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const endCardCenter = auToPx(HELIOPAUSE_AU) + 800 + (END_CARD_WIDTH - 1200) / 2;
+      const maxScroll = endCardCenter - el.clientWidth / 2;
+      if (el.scrollLeft > maxScroll) {
+        el.scrollLeft = maxScroll;
+      }
+    };
+    el.addEventListener("scroll", onScroll);
+    return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
   const getCrossing = (id) => crossingsRef.current.get(id) ?? null;
@@ -550,13 +717,13 @@ export default function SolarSystemScale() {
             <div key={i} style={{
               position: "absolute", left: auToPx(vt.au), top: "50%",
               transform: "translate(-50%, -50%)",
-              textAlign: "center", maxWidth: 360, padding: "0 20px"
+              textAlign: "center", maxWidth: 480, padding: "0 20px"
             }}>
-              <div style={{ fontSize: 14, color: "#ffffff1a", lineHeight: 1.6, fontWeight: 300, fontStyle: "italic" }}>
+              <div style={{ fontSize: 20, color: "#ffffff44", lineHeight: 1.6, fontWeight: 300, fontStyle: "italic" }}>
                 {vt.text}
               </div>
               {vt.sub && (
-                <div style={{ fontSize: 11, color: "#ffffff0e", lineHeight: 1.5, marginTop: 8 }}>
+                <div style={{ fontSize: 14, color: "#ffffff28", lineHeight: 1.5, marginTop: 10 }}>
                   {vt.sub}
                 </div>
               )}
@@ -623,48 +790,71 @@ export default function SolarSystemScale() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     {PROJECTIONS.map((p, i) => {
                       const t = projectTime(p.au);
+                      const isExpanded = expandedProjection === i;
                       return (
-                        <div key={i} style={{
-                          display: "flex", justifyContent: "space-between", alignItems: "baseline",
-                          padding: "10px 16px",
-                          background: i % 2 === 0 ? "#ffffff03" : "transparent",
-                          borderRadius: 6
-                        }}>
-                          <div>
-                            <div style={{ fontSize: 12, color: "#ffffffbb", fontWeight: 500 }}>{p.name}</div>
-                            <div style={{ fontSize: 9, color: "#ffffff33", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>
-                              {p.au.toLocaleString()} AU · {p.note}
+                        <div key={i}>
+                          <div
+                            onClick={() => setExpandedProjection(isExpanded ? null : i)}
+                            style={{
+                              display: "flex", justifyContent: "space-between", alignItems: "baseline",
+                              padding: "10px 16px",
+                              background: i % 2 === 0 ? "#ffffff03" : "transparent",
+                              borderRadius: isExpanded ? "6px 6px 0 0" : 6,
+                              cursor: "pointer",
+                              transition: "background 0.2s",
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "#ffffff0a"; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = i % 2 === 0 ? "#ffffff03" : "transparent"; }}
+                          >
+                            <div>
+                              <div style={{ fontSize: 12, color: "#ffffffbb", fontWeight: 500 }}>
+                                {p.name}
+                                <span style={{ fontSize: 9, color: "#ffffff33", marginLeft: 8 }}>
+                                  {isExpanded ? "▾" : "▸"}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: 9, color: "#ffffff33", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>
+                                {p.au.toLocaleString()} AU · {p.note}
+                              </div>
+                            </div>
+                            <div style={{
+                              fontSize: 13, fontWeight: 600, color: t > 86400 * 365.25 ? "#FF6B6B" : t > 86400 ? "#FF8C42" : "#FDB813",
+                              fontFamily: "'JetBrains Mono', monospace",
+                              whiteSpace: "nowrap", marginLeft: 16,
+                              textAlign: "right"
+                            }}>
+                              {formatTime(t)}
                             </div>
                           </div>
-                          <div style={{
-                            fontSize: 13, fontWeight: 600, color: t > 86400 * 365.25 ? "#FF6B6B" : t > 86400 ? "#FF8C42" : "#FDB813",
-                            fontFamily: "'JetBrains Mono', monospace",
-                            whiteSpace: "nowrap", marginLeft: 16,
-                            textAlign: "right"
-                          }}>
-                            {formatTime(t)}
-                          </div>
+                          {isExpanded && p.facts && (
+                            <div style={{
+                              padding: "12px 16px 14px",
+                              background: "#ffffff06",
+                              borderRadius: "0 0 6px 6px",
+                              borderTop: "1px solid #ffffff0a",
+                              display: "flex", flexDirection: "column", gap: 8,
+                            }}>
+                              {p.facts.map((fact, fi) => (
+                                <div key={fi} style={{
+                                  fontSize: 11, color: "#ffffff77", lineHeight: 1.5,
+                                  fontFamily: "'Space Grotesk', sans-serif",
+                                  paddingLeft: 10, borderLeft: "2px solid #ffffff1a"
+                                }}>
+                                  {fact}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       );
                     })}
                   </div>
 
                   <div style={{
-                    marginTop: 32, padding: "20px 24px",
-                    background: "#ffffff04", borderRadius: 10,
-                    border: "1px solid #ffffff08",
+                    marginTop: 32, padding: "24px",
                     textAlign: "center"
                   }}>
-                    <div style={{ fontSize: 13, color: "#ffffff66", lineHeight: 1.6 }}>
-                      You scrolled for {formatTime(endTime)} and crossed {HELIOPAUSE_AU} AU.
-                    </div>
-                    <div style={{ fontSize: 13, color: "#ffffff44", lineHeight: 1.6, marginTop: 8 }}>
-                      Reaching the Andromeda Galaxy at this speed would take{" "}
-                      <span style={{ color: "#FF6B6B", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>
-                        {formatTime(projectTime(1.604e11))}
-                      </span>.
-                    </div>
-                    <div style={{ fontSize: 11, color: "#ffffff22", marginTop: 16, fontStyle: "italic" }}>
+                    <div style={{ fontSize: 20, color: "#ffffff88", fontStyle: "italic", fontFamily: "'Space Grotesk', sans-serif" }}>
                       Space is big. Really big.
                     </div>
                   </div>
