@@ -358,6 +358,20 @@ export default function SolarSystemScale() {
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
   }, []);
 
+  // Convert vertical mouse wheel to horizontal scroll
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onWheel = (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
   const getCrossing = (id) => crossingsRef.current.get(id) ?? null;
   const getPrevCrossing = (id) => {
     const idx = ALL_POSITIONED.findIndex(o => o.id === id);
