@@ -54,7 +54,7 @@ const BODIES = [
       "71% of Earth's surface is water, but all that water would form a sphere only 1,385 km across — barely visible at this scale.",
       "Earth's magnetic field extends 65,000 km into space, shielding the atmosphere from solar wind that would otherwise strip it away.",
     ]},
-  { id: "jwst", name: "James Webb Space Telescope", labelShort: "JWST", type: "spacecraft", au: 1.01, diam: 0, color: "#E8B860",
+  { id: "jwst", name: "James Webb Space Telescope", labelShort: "JWST", type: "spacecraft", au: 1.01, diam: 0, color: "#E8B860", crossingOffset: 30,
     desc: "Launched December 25, 2021. Orbits the Sun-Earth L2 Lagrange point, about 1.5 million km beyond Earth — always on the night side, shielded from the Sun. The most powerful space telescope ever built, seeing infrared light from the first galaxies that ever formed.",
     facts: [
       "JWST's gold-coated mirror is 6.5 meters across, giving it nearly 7 times Hubble's light-collecting area. It was folded origami-style to fit inside its rocket and unfolded in space over two weeks.",
@@ -397,7 +397,7 @@ const ObjectMarker = ({ obj, onClick, crossingTime, prevCrossingTime, isSelected
       {/* Crossing time below */}
       {crossingTime != null && (
         <div style={{
-          position: "absolute", top: displaySize / 2 + 88, left: "50%", transform: "translateX(-50%)",
+          position: "absolute", top: displaySize / 2 + 88 + (obj.crossingOffset || 0), left: "50%", transform: "translateX(-50%)",
           textAlign: "center", whiteSpace: "nowrap"
         }}>
           <div style={{ fontSize: 10, color: "#ffffff44", fontFamily: "'JetBrains Mono', monospace" }}>
