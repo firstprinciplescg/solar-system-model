@@ -147,25 +147,38 @@ const BOUNDARIES = [
 const ALL_POSITIONED = [...BODIES, ...BOUNDARIES].sort((a, b) => a.au - b.au);
 
 const VOID_TEXTS = [
+  { au: 0.5, text: "A comet is passing through here this week.", sub: "C/2025 R3 (PanSTARRS) — naked-eye visible before dawn from the Northern Hemisphere, briefly, before the Sun's glare swallows it." },
   { au: 1.3, text: "Your entire world was that single pixel.", sub: "Everyone you've ever known. Every ocean, mountain, city, and war." },
   { au: 2.5, text: "You're crossing the asteroid belt.", sub: "If you gathered every asteroid here, they'd mass less than 4% of our Moon." },
   { au: 3.8, text: "Light from the Sun takes 30 minutes to reach this far." },
   { au: 7.5, text: "The gap between Jupiter and Saturn could swallow the entire inner solar system." },
-  { au: 12.5, text: "Voyager 2 took over 8 years to travel from Earth to Saturn." },
+  { au: 12.5, text: "Voyager 2 passed through here in 1981 — the only spacecraft to visit all four giant planets." },
   { au: 16, text: "Before William Herschel in 1781, no one knew a planet existed this far out." },
   { au: 22, text: "Uranus's moons may harbor subsurface oceans.", sub: "Water, carbon, nitrogen, energy from tidal heating. The building blocks of life, hiding in this darkness." },
   { au: 28, text: "Light from the Sun takes over 3.5 hours to reach this distance." },
   { au: 35, text: "You've entered the Kuiper Belt.", sub: "A ring of hundreds of thousands of icy worlds orbiting in the deep cold." },
   { au: 42, text: "New Horizons launched in 2006 and took 9.5 years to reach Pluto.", sub: "It was the fastest spacecraft ever launched. You've scrolled past Pluto's orbit in minutes." },
-  { au: 55, text: "Voyager 1 is roughly here now.", sub: "Launched September 5, 1977. Over 47 years of travel at 61,000 km/h." },
+  { au: 62, text: "New Horizons is roughly here now.", sub: "Still transmitting from the Kuiper Belt, 20 years after launch — the fastest spacecraft ever sent from Earth." },
   { au: 70, text: "The space between objects grows. The silence deepens." },
   { au: 82, text: "Almost everything humanity has ever sent into space is behind you now." },
   { au: 100, text: "Light takes nearly 14 hours to travel this far from the Sun." },
   { au: 110, text: "You're in the heliosheath.", sub: "Solar wind piles up here, compressed against interstellar space." },
-  { au: 118, text: "The edge of the Sun's domain is just ahead." },
+  { au: 118, text: "Voyager 1 crossed this edge in 2012.", sub: "It's now roughly 50 AU beyond here — the farthest human-made object, still broadcasting back at 22 watts." },
 ];
 
 const PROJECTIONS = [
+  { name: "Voyager 2", au: 143, note: "In interstellar space — launched 1977",
+    facts: [
+      "Voyager 2 crossed the heliopause on November 5, 2018 — six years after Voyager 1, and on a completely different trajectory, confirming the boundary is real.",
+      "It's the only spacecraft ever to visit all four giant planets: Jupiter, Saturn, Uranus, and Neptune.",
+      "It carries a Golden Record of Earth's sounds and images — a message for whoever might find it over the next billion years.",
+    ]},
+  { name: "Voyager 1", au: 173, note: "Farthest human-made object — launched 1977",
+    facts: [
+      "Voyager 1 became the first spacecraft to enter interstellar space when it crossed the heliopause on August 25, 2012.",
+      "Its radio signal, traveling at the speed of light, takes over 23 hours to reach Earth.",
+      "Its plutonium power source is expected to fail around 2030. After that, it will drift silently through the galaxy for billions of years.",
+    ]},
   { name: "Sedna", au: 506, note: "Distant dwarf planet, 11,400-year orbit",
     facts: [
       "Sedna's orbit is one of the most extreme known — it ranges from 76 AU at its closest to 937 AU at its farthest.",
