@@ -104,6 +104,13 @@ const BODIES = [
       "It has two small moons, Hi'iaka and Namaka, named after the Hawaiian goddess Haumea's daughters.",
       "Haumea's ring was discovered during a stellar occultation in 2017 — making it the first known trans-Neptunian object with a ring system.",
     ]},
+  { id: "pioneer11", name: "Pioneer 11", type: "spacecraft", au: 44, diam: 0, color: "#C0B0A0",
+    desc: "Launched April 5, 1973. The first spacecraft to fly past Saturn. Last contact was September 30, 1995, when it was at roughly this distance — 44 AU. Its power source failed; it's still drifting outward in silence, now around 120 AU from the Sun.",
+    facts: [
+      "Pioneer 11 flew through Saturn's ring plane in 1979 — a risky scouting maneuver that proved the path was safe for the Voyagers to follow.",
+      "It carries the Pioneer Plaque: a gold-anodized diagram meant for any extraterrestrials who might find it, showing a man, a woman, and Earth's location in the galaxy.",
+      "Its trajectory is aimed toward the constellation Aquila. In about 4 million years it will pass near the star Lambda Aquilae — long after the plaque has been sandblasted unreadable by micrometeorites.",
+    ]},
   { id: "makemake", name: "Makemake", type: "dwarf", au: 45.79, diam: 1430, color: "#D4A574",
     desc: "Second-brightest Kuiper Belt object after Pluto. Surface temperature around 30 K (−243°C). Has one known moon.",
     facts: [
@@ -111,12 +118,26 @@ const BODIES = [
       "Unlike Pluto, Makemake appears to have no significant atmosphere — a stellar occultation in 2011 showed no atmospheric signature.",
       "Its surface is covered in frozen methane and ethane, which give it a reddish-brown color similar to Pluto.",
     ]},
+  { id: "new_horizons", name: "New Horizons", type: "spacecraft", au: 62, diam: 0, color: "#B0C8D8",
+    desc: "Launched January 19, 2006. The fastest spacecraft ever sent from Earth. Flew past Pluto in July 2015 and the Kuiper Belt object Arrokoth in 2019. Still transmitting from here, studying the outer heliosphere.",
+    facts: [
+      "New Horizons covered the Earth-Moon distance in 9 hours. Apollo 11 took 3 days to cover the same ground.",
+      "It's the only spacecraft to have visited Pluto and a Kuiper Belt object up close — and the Arrokoth encounter was the most distant close flyby in history.",
+      "It will never catch the Voyagers. It launched faster, but the Voyagers got much stronger gravity-assist boosts from the giant planets. New Horizons should reach the heliopause in the 2040s.",
+    ]},
   { id: "eris", name: "Eris", type: "dwarf", au: 67.78, diam: 2326, color: "#C8C8C8",
     desc: "Most massive known dwarf planet. Its discovery in 2005 directly triggered the debate that reclassified Pluto. Named after the Greek goddess of discord.",
     facts: [
       "Eris is 27% more massive than Pluto despite being roughly the same size — it's extraordinarily dense for an icy body.",
       "Its surface is one of the most reflective in the solar system, likely coated in a thin layer of frozen nitrogen that re-freezes from its atmosphere.",
       "At its farthest, Eris reaches 97.5 AU from the Sun. Its 559-year orbit takes it nearly to the edge of the scattered disc.",
+    ]},
+  { id: "pioneer10", name: "Pioneer 10", type: "spacecraft", au: 80, diam: 0, color: "#C0B0A0",
+    desc: "Launched March 2, 1972. The first spacecraft to cross the asteroid belt and the first to fly past Jupiter. Last contact was January 23, 2003, when it was at roughly this distance — 80 AU from Earth. It's still out there, silent, now around 139 AU from the Sun.",
+    facts: [
+      "Pioneer 10 was the first human-made object ever placed on a trajectory to leave the solar system.",
+      "It's heading toward the star Aldebaran in Taurus — a journey of about 2 million years.",
+      "Like Pioneer 11, it carries a gold-anodized plaque — a message in pictures for any future finders who may never exist.",
     ]},
 ];
 
@@ -147,7 +168,7 @@ const BOUNDARIES = [
 const ALL_POSITIONED = [...BODIES, ...BOUNDARIES].sort((a, b) => a.au - b.au);
 
 const VOID_TEXTS = [
-  { au: 0.5, text: "A comet is passing through here this week.", sub: "C/2025 R3 (PanSTARRS) — naked-eye visible before dawn from the Northern Hemisphere, briefly, before the Sun's glare swallows it." },
+  { au: 0.5, text: "A comet is passing through here this week.", sub: "C/2025 R3 (PanSTARRS) — naked-eye visible before dawn from the Northern Hemisphere, briefly, before the Sun's glare swallows it.", link: { url: "https://theskylive.com/c2025r3-info", label: "Find it in your sky →" } },
   { au: 1.3, text: "Your entire world was that single pixel.", sub: "Everyone you've ever known. Every ocean, mountain, city, and war." },
   { au: 2.5, text: "You're crossing the asteroid belt.", sub: "If you gathered every asteroid here, they'd mass less than 4% of our Moon." },
   { au: 3.8, text: "Light from the Sun takes 30 minutes to reach this far." },
@@ -157,8 +178,7 @@ const VOID_TEXTS = [
   { au: 22, text: "Uranus's moons may harbor subsurface oceans.", sub: "Water, carbon, nitrogen, energy from tidal heating. The building blocks of life, hiding in this darkness." },
   { au: 28, text: "Light from the Sun takes over 3.5 hours to reach this distance." },
   { au: 35, text: "You've entered the Kuiper Belt.", sub: "A ring of hundreds of thousands of icy worlds orbiting in the deep cold." },
-  { au: 42, text: "New Horizons launched in 2006 and took 9.5 years to reach Pluto.", sub: "It was the fastest spacecraft ever launched. You've scrolled past Pluto's orbit in minutes." },
-  { au: 62, text: "New Horizons is roughly here now.", sub: "Still transmitting from the Kuiper Belt, 20 years after launch — the fastest spacecraft ever sent from Earth." },
+  { au: 41, text: "You've scrolled past Pluto's orbit in minutes.", sub: "New Horizons, the fastest spacecraft ever launched, took 9.5 years to cover this same distance." },
   { au: 70, text: "The space between objects grows. The silence deepens." },
   { au: 82, text: "Almost everything humanity has ever sent into space is behind you now." },
   { au: 100, text: "Light takes nearly 14 hours to travel this far from the Sun." },
@@ -259,10 +279,11 @@ const formatDist = (au) => {
 
 const ObjectMarker = ({ obj, onClick, crossingTime, prevCrossingTime, isSelected }) => {
   const x = auToPx(obj.au);
-  const truePx = obj.diam ? kmToPxDia(obj.diam) : 0;
-  const isSubPixel = truePx < 3 && obj.type !== "star";
-  const displaySize = obj.type === "star" ? Math.round(truePx) : Math.max(3, Math.round(truePx));
   const isStar = obj.type === "star";
+  const isSpacecraft = obj.type === "spacecraft";
+  const truePx = obj.diam ? kmToPxDia(obj.diam) : 0;
+  const isSubPixel = !isSpacecraft && truePx < 3 && !isStar;
+  const displaySize = isSpacecraft ? 14 : (isStar ? Math.round(truePx) : Math.max(3, Math.round(truePx)));
 
   return (
     <div style={{ position: "absolute", left: x, top: "50%", transform: "translate(-50%, -50%)", zIndex: 10, cursor: "pointer" }} onClick={onClick}>
@@ -278,44 +299,68 @@ const ObjectMarker = ({ obj, onClick, crossingTime, prevCrossingTime, isSelected
         bottom: -80, height: 60,
       }} />
 
-      {/* The body */}
-      <div style={{
-        width: displaySize, height: displaySize, borderRadius: "50%",
-        background: isStar
-          ? `radial-gradient(circle at 38% 38%, #FFF8E1, #FDB813, #E89A00)`
-          : `radial-gradient(circle at 35% 35%, ${obj.color}ee, ${obj.color}99, ${obj.color}55)`,
-        boxShadow: isStar
-          ? `0 0 60px #FDB81366, 0 0 120px #FDB81322, 0 0 200px #FDB81311`
-          : isSelected
-            ? `0 0 12px ${obj.color}88, 0 0 24px ${obj.color}33`
-            : `0 0 6px ${obj.color}22`,
-        position: "relative",
-        transition: "box-shadow 0.3s",
-      }}>
-        {/* Saturn rings */}
-        {obj.hasRings && (
+      {/* Spacecraft marker: rotated square with pulsing ring */}
+      {isSpacecraft ? (
+        <div style={{ width: displaySize, height: displaySize, position: "relative" }}>
           <div style={{
             position: "absolute", top: "50%", left: "50%",
-            transform: "translate(-50%, -50%) rotateX(70deg)",
-            width: kmToPxDia(obj.ringSpan), height: kmToPxDia(obj.ringSpan) * 0.15,
-            borderRadius: "50%",
-            border: `1px solid ${obj.color}66`,
-            boxShadow: `inset 0 0 3px ${obj.color}33`,
-            pointerEvents: "none"
+            transform: "translate(-50%, -50%) rotate(45deg)",
+            width: 8, height: 8,
+            background: `${obj.color}`,
+            border: `1px solid ${obj.color}`,
+            boxShadow: isSelected
+              ? `0 0 10px ${obj.color}cc, 0 0 20px ${obj.color}44`
+              : `0 0 4px ${obj.color}66`,
+            transition: "box-shadow 0.3s",
           }} />
-        )}
-        {/* Sub-pixel indicator ring */}
-        {isSubPixel && (
           <div style={{
             position: "absolute", top: "50%", left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 12, height: 12, borderRadius: "50%",
-            border: `1px solid ${obj.color}44`,
+            width: 18, height: 18, borderRadius: "50%",
+            border: `1px solid ${obj.color}55`,
             animation: "pulse 3s ease-in-out infinite",
             pointerEvents: "none"
           }} />
-        )}
-      </div>
+        </div>
+      ) : (
+        <div style={{
+          width: displaySize, height: displaySize, borderRadius: "50%",
+          background: isStar
+            ? `radial-gradient(circle at 38% 38%, #FFF8E1, #FDB813, #E89A00)`
+            : `radial-gradient(circle at 35% 35%, ${obj.color}ee, ${obj.color}99, ${obj.color}55)`,
+          boxShadow: isStar
+            ? `0 0 60px #FDB81366, 0 0 120px #FDB81322, 0 0 200px #FDB81311`
+            : isSelected
+              ? `0 0 12px ${obj.color}88, 0 0 24px ${obj.color}33`
+              : `0 0 6px ${obj.color}22`,
+          position: "relative",
+          transition: "box-shadow 0.3s",
+        }}>
+          {/* Saturn rings */}
+          {obj.hasRings && (
+            <div style={{
+              position: "absolute", top: "50%", left: "50%",
+              transform: "translate(-50%, -50%) rotateX(70deg)",
+              width: kmToPxDia(obj.ringSpan), height: kmToPxDia(obj.ringSpan) * 0.15,
+              borderRadius: "50%",
+              border: `1px solid ${obj.color}66`,
+              boxShadow: `inset 0 0 3px ${obj.color}33`,
+              pointerEvents: "none"
+            }} />
+          )}
+          {/* Sub-pixel indicator ring */}
+          {isSubPixel && (
+            <div style={{
+              position: "absolute", top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 12, height: 12, borderRadius: "50%",
+              border: `1px solid ${obj.color}44`,
+              animation: "pulse 3s ease-in-out infinite",
+              pointerEvents: "none"
+            }} />
+          )}
+        </div>
+      )}
 
       {/* Label above */}
       <div style={{
@@ -787,6 +832,25 @@ export default function SolarSystemScale() {
                 <div style={{ fontSize: 16, color: "#ffffff44", lineHeight: 1.5, marginTop: 12 }}>
                   {vt.sub}
                 </div>
+              )}
+              {vt.link && (
+                <a
+                  href={vt.link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-block", marginTop: 14,
+                    fontSize: 14, color: "#FDB813cc",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    letterSpacing: 1, textDecoration: "none",
+                    borderBottom: "1px solid #FDB81344", paddingBottom: 2,
+                    transition: "color 0.2s, border-color 0.2s",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.color = "#FDB813"; e.currentTarget.style.borderBottomColor = "#FDB813"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "#FDB813cc"; e.currentTarget.style.borderBottomColor = "#FDB81344"; }}
+                >
+                  {vt.link.label}
+                </a>
               )}
             </div>
           ))}
