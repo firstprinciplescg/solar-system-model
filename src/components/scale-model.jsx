@@ -54,7 +54,7 @@ const BODIES = [
       "71% of Earth's surface is water, but all that water would form a sphere only 1,385 km across — barely visible at this scale.",
       "Earth's magnetic field extends 65,000 km into space, shielding the atmosphere from solar wind that would otherwise strip it away.",
     ]},
-  { id: "jwst", name: "James Webb Space Telescope", type: "spacecraft", au: 1.01, diam: 0, color: "#E8B860",
+  { id: "jwst", name: "James Webb Space Telescope", labelShort: "JWST", type: "spacecraft", au: 1.01, diam: 0, color: "#E8B860",
     desc: "Launched December 25, 2021. Orbits the Sun-Earth L2 Lagrange point, about 1.5 million km beyond Earth — always on the night side, shielded from the Sun. The most powerful space telescope ever built, seeing infrared light from the first galaxies that ever formed.",
     facts: [
       "JWST's gold-coated mirror is 6.5 meters across, giving it nearly 7 times Hubble's light-collecting area. It was folded origami-style to fit inside its rocket and unfolded in space over two weeks.",
@@ -382,7 +382,7 @@ const ObjectMarker = ({ obj, onClick, crossingTime, prevCrossingTime, isSelected
         textAlign: "center", whiteSpace: "nowrap"
       }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: obj.color, fontFamily: "'JetBrains Mono', monospace", letterSpacing: 0.5 }}>
-          {obj.name}
+          {obj.labelShort || obj.name}
         </div>
         <div style={{ fontSize: 11, color: "#ffffff55", fontFamily: "'JetBrains Mono', monospace", marginTop: 3 }}>
           {obj.au > 0 ? `${obj.au} AU` : "0 AU"}
@@ -403,7 +403,7 @@ const ObjectMarker = ({ obj, onClick, crossingTime, prevCrossingTime, isSelected
           <div style={{ fontSize: 10, color: "#ffffff44", fontFamily: "'JetBrains Mono', monospace" }}>
             reached in {formatTime(crossingTime)}
           </div>
-          {prevCrossingTime != null && (
+          {prevCrossingTime != null && (crossingTime - prevCrossingTime) >= 1 && (
             <div style={{ fontSize: 10, color: "#ffffff2a", fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>
               {formatTime(crossingTime - prevCrossingTime)} from prev
             </div>
