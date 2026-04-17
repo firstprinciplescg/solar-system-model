@@ -26,6 +26,13 @@ const BODIES = [
       "Its core temperature reaches 15 million °C — hot enough to sustain thermonuclear reactions for another 5 billion years.",
       "A photon generated in the Sun's core takes an average of 170,000 years to reach the surface, then just 8 minutes to reach Earth.",
     ]},
+  { id: "parker", name: "Parker Solar Probe", type: "spacecraft", au: 0.046, diam: 0, color: "#FFA952",
+    desc: "Launched August 12, 2018. The fastest object ever built by humans, and the first spacecraft to 'touch' the Sun — flying through its corona. At closest approach it's just 6.9 million km from the Sun's surface (0.046 AU), inside a region no probe had ever survived before.",
+    facts: [
+      "At perihelion, Parker travels at about 692,000 km/h — fast enough to go from New York to Tokyo in under a minute.",
+      "Its 11.5 cm carbon-composite heat shield keeps the instruments at room temperature while its Sun-facing side endures temperatures over 1,400°C.",
+      "Parker uses seven Venus gravity assists over its mission to progressively tighten its orbit, each flyby stealing a bit of Venus's momentum to bring Parker closer to the Sun.",
+    ]},
   { id: "mercury", name: "Mercury", type: "planet", au: 0.387, diam: 4879, color: "#B5A7A7",
     desc: "Smallest planet. No atmosphere to speak of. Surface temperatures swing from −180°C to 430°C in the same day.",
     facts: [
@@ -47,6 +54,13 @@ const BODIES = [
       "71% of Earth's surface is water, but all that water would form a sphere only 1,385 km across — barely visible at this scale.",
       "Earth's magnetic field extends 65,000 km into space, shielding the atmosphere from solar wind that would otherwise strip it away.",
     ]},
+  { id: "jwst", name: "James Webb Space Telescope", type: "spacecraft", au: 1.01, diam: 0, color: "#E8B860",
+    desc: "Launched December 25, 2021. Orbits the Sun-Earth L2 Lagrange point, about 1.5 million km beyond Earth — always on the night side, shielded from the Sun. The most powerful space telescope ever built, seeing infrared light from the first galaxies that ever formed.",
+    facts: [
+      "JWST's gold-coated mirror is 6.5 meters across, giving it nearly 7 times Hubble's light-collecting area. It was folded origami-style to fit inside its rocket and unfolded in space over two weeks.",
+      "Its five-layer sunshield is the size of a tennis court. It reduces solar heat by a factor of a million, keeping the telescope at −233°C so it can detect the faintest infrared glows.",
+      "JWST has observed galaxies that formed just 300 million years after the Big Bang — the most distant objects ever studied, their light stretched from visible to infrared by 13.5 billion years of cosmic expansion.",
+    ]},
   { id: "mars", name: "Mars", type: "planet", au: 1.524, diam: 6779, color: "#C1440E",
     desc: "The Red Planet. Home to Olympus Mons, the tallest volcano in the solar system at 21.9 km high.",
     facts: [
@@ -64,7 +78,7 @@ const BODIES = [
   { id: "jupiter", name: "Jupiter", type: "planet", au: 5.203, diam: 139820, color: "#C88B3A",
     desc: "Largest planet. 11 Earths wide. Its Great Red Spot is a storm bigger than Earth that has raged for centuries.",
     facts: [
-      "Jupiter's magnetic field is 20,000 times stronger than Earth's and creates radiation belts that would deliver a fatal dose to an unshielded human in minutes.",
+      "Jupiter's magnetic field is about 20 times stronger than Earth's at its cloud tops — and its total magnetic moment is 20,000 times larger, creating radiation belts that would deliver a fatal dose to an unshielded human in minutes.",
       "Its moon Europa almost certainly has a global saltwater ocean beneath its ice crust, making it one of the best candidates for extraterrestrial life.",
       "Jupiter acts as a cosmic shield — its gravity deflects or captures comets and asteroids that might otherwise hit the inner planets.",
     ]},
@@ -227,7 +241,7 @@ const PROJECTIONS = [
     facts: [
       "Barnard's Star has the fastest apparent motion of any star in Earth's sky, crossing the width of a full moon every 180 years.",
       "It's an ancient red dwarf, estimated at 10 billion years old — more than twice the age of our Sun.",
-      "A candidate exoplanet (Barnard b) was announced in 2018 — a frozen super-Earth at about 0.4 AU from the star.",
+      "In 2024, astronomers finally confirmed a sub-Earth-mass planet (Barnard b) orbiting in just 3.15 days; by 2025, a full system of four tiny rocky worlds had been found. It's the nearest known multi-planet system.",
     ]},
   { name: "Epsilon Eridani", au: 662350, note: "Sun-like star with exoplanets — 10.5 light-years",
     facts: [
@@ -643,6 +657,14 @@ export default function SolarSystemScale() {
     };
   }, []);
 
+  // Close modal on Esc
+  useEffect(() => {
+    if (!selectedId) return;
+    const onKey = (e) => { if (e.key === "Escape") setSelectedId(null); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [selectedId]);
+
   const getCrossing = (id) => crossingsRef.current.get(id) ?? null;
   const getPrevCrossing = (id) => {
     const idx = ALL_POSITIONED.findIndex(o => o.id === id);
@@ -666,6 +688,9 @@ export default function SolarSystemScale() {
         @keyframes pulse { 0%,100%{opacity:0.3;transform:translate(-50%,-50%) scale(1)} 50%{opacity:0.7;transform:translate(-50%,-50%) scale(1.3)} }
         @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         ::-webkit-scrollbar{height:4px} ::-webkit-scrollbar-track{background:#000} ::-webkit-scrollbar-thumb{background:#ffffff12;border-radius:2px}
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        }
       `}</style>
 
       {/* ── Fixed star background ── */}
@@ -692,21 +717,21 @@ export default function SolarSystemScale() {
         pointerEvents: "none"
       }}>
         <div style={{ pointerEvents: "auto" }}>
-          <div style={{ fontSize: 10, color: "#ffffff20", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2, textTransform: "uppercase" }}>
+          <div style={{ fontSize: 10, color: "#ffffff66", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2, textTransform: "uppercase" }}>
             Earth = 1 pixel
           </div>
         </div>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 18, fontWeight: 600, color: "#ffffffcc", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
-            {currentAU < 0.001 ? "0" : currentAU < 10 ? currentAU.toFixed(2) : currentAU < 100 ? currentAU.toFixed(1) : Math.round(currentAU)} <span style={{ fontSize: 11, color: "#ffffff44" }}>AU</span>
+            {currentAU < 0.001 ? "0" : currentAU < 10 ? currentAU.toFixed(2) : currentAU < 100 ? currentAU.toFixed(1) : Math.round(currentAU)} <span style={{ fontSize: 11, color: "#ffffff77" }}>AU</span>
           </div>
-          <div style={{ fontSize: 9, color: "#ffffff22", fontFamily: "'JetBrains Mono', monospace" }}>
+          <div style={{ fontSize: 9, color: "#ffffff66", fontFamily: "'JetBrains Mono', monospace" }}>
             {(currentAU * AU_KM).toLocaleString(undefined, { maximumFractionDigits: 0 })} km
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
           {startTimeRef.current && (
-            <div style={{ fontSize: 11, color: "#ffffff33", fontFamily: "'JetBrains Mono', monospace" }}>
+            <div style={{ fontSize: 11, color: "#ffffff77", fontFamily: "'JetBrains Mono', monospace" }}>
               {formatTime(elapsedTime)}
             </div>
           )}
