@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 
 // ══════════════════════════════════════════════════════════
 // CONSTANTS
@@ -307,27 +307,29 @@ const formatDist = (au) => {
 // COMPONENTS
 // ══════════════════════════════════════════════════════════
 
-const ObjectMarker = ({ obj, onClick, crossingTime, prevCrossingTime, isSelected }) => {
+const ObjectMarker = ({ obj, vertical, onClick, crossingTime, prevCrossingTime, isSelected }) => {
   const x = auToPx(obj.au);
   const isStar = obj.type === "star";
   const isSpacecraft = obj.type === "spacecraft";
   const truePx = obj.diam ? kmToPxDia(obj.diam) : 0;
   const isSubPixel = !isSpacecraft && truePx < 3 && !isStar;
   const displaySize = isSpacecraft ? 14 : (isStar ? Math.round(truePx) : Math.max(3, Math.round(truePx)));
+  const labelGap = Math.max(displaySize / 2, 9) + 16;
 
   return (
-    <div style={{ position: "absolute", left: x, top: "50%", transform: "translate(-50%, -50%)", zIndex: 10, cursor: "pointer" }} onClick={onClick}>
-      {/* Vertical guide line */}
-      <div style={{
-        position: "absolute", left: "50%", transform: "translateX(-50%)",
-        width: 1, background: `${obj.color}18`,
-        top: -80, height: 60,
-      }} />
-      <div style={{
-        position: "absolute", left: "50%", transform: "translateX(-50%)",
-        width: 1, background: `${obj.color}18`,
-        bottom: -80, height: 60,
-      }} />
+    <div style={{ position: "absolute", ...(vertical ? { top: x, left: "50%" } : { left: x, top: "50%" }), transform: "translate(-50%, -50%)", zIndex: 10, cursor: "pointer" }} onClick={onClick}>
+      {/* Guide lines flanking the marker along the cross axis */}
+      {vertical ? (
+        <>
+          <div style={{ position: "absolute", top: "50%", transform: "translateY(-50%)", height: 1, background: `${obj.color}18`, left: -80, width: 60 }} />
+          <div style={{ position: "absolute", top: "50%", transform: "translateY(-50%)", height: 1, background: `${obj.color}18`, right: -80, width: 60 }} />
+        </>
+      ) : (
+        <>
+          <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", width: 1, background: `${obj.color}18`, top: -80, height: 60 }} />
+          <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", width: 1, background: `${obj.color}18`, bottom: -80, height: 60 }} />
+        </>
+      )}
 
       {/* Spacecraft marker: rotated square with pulsing ring */}
       {isSpacecraft ? (
@@ -392,8 +394,11 @@ const ObjectMarker = ({ obj, onClick, crossingTime, prevCrossingTime, isSelected
         </div>
       )}
 
-      {/* Label above */}
-      <div style={{
+      {/* Label: above in horizontal mode, beside in vertical mode */}
+      <div style={vertical ? {
+        position: "absolute", left: labelGap, top: "50%", transform: "translateY(-50%)",
+        textAlign: "left", whiteSpace: "nowrap"
+      } : {
         position: "absolute", bottom: displaySize / 2 + 88, left: "50%", transform: "translateX(-50%)",
         textAlign: "center", whiteSpace: "nowrap"
       }}>
@@ -412,7 +417,10 @@ const ObjectMarker = ({ obj, onClick, crossingTime, prevCrossingTime, isSelected
 
       {/* Crossing time below */}
       {crossingTime != null && (
-        <div style={{
+        <div style={vertical ? {
+          position: "absolute", right: labelGap, top: "50%", transform: "translateY(-50%)",
+          textAlign: "right", whiteSpace: "nowrap"
+        } : {
           position: "absolute", top: displaySize / 2 + 88 + (obj.crossingOffset || 0), left: "50%", transform: "translateX(-50%)",
           textAlign: "center", whiteSpace: "nowrap"
         }}>
@@ -562,7 +570,33 @@ export default function SolarSystemScale() {
   const [reachedEnd, setReachedEnd] = useState(false);
   const [expandedProjection, setExpandedProjection] = useState(null);
   const [usedJump, setUsedJump] = useState(false);
+  const [vertical, setVertical] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const override = new URLSearchParams(window.location.search).get("mode");
+    if (override === "vertical") return true;
+    if (override === "horizontal") return false;
+    return window.matchMedia("(max-width: 820px)").matches;
+  });
   const [, forceUpdate] = useState(0);
+
+  // Narrow viewports journey downward instead of rightward,
+  // unless ?mode=vertical|horizontal pins a preference
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("mode")) return;
+    const mq = window.matchMedia("(max-width: 820px)");
+    const onChange = () => setVertical(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Both axes share the same px scale, so position carries over on a mode flip
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const px = lastSxRef.current;
+    if (vertical) { el.scrollTop = px; el.scrollLeft = 0; }
+    else { el.scrollLeft = px; el.scrollTop = 0; }
+  }, [vertical]);
 
   // Always start at the Sun: browser scroll restoration would fast-forward
   // the journey on reload and corrupt every crossing time.
@@ -571,6 +605,7 @@ export default function SolarSystemScale() {
     const el = containerRef.current;
     if (el) {
       el.scrollLeft = 0;
+      el.scrollTop = 0;
       el.focus({ preventScroll: true });
     }
   }, []);
@@ -581,8 +616,8 @@ export default function SolarSystemScale() {
       const el = containerRef.current;
       if (!el) { rafRef.current = requestAnimationFrame(loop); return; }
 
-      const sx = el.scrollLeft;
-      const vw = el.clientWidth;
+      const sx = vertical ? el.scrollTop : el.scrollLeft;
+      const vw = vertical ? el.clientHeight : el.clientWidth;
       const centerX = sx + vw / 2;
       // AU at viewport center — the same reference point crossings use
       const au = Math.max(0, (centerX - LEFT_PAD) / PX_PER_AU);
@@ -617,7 +652,9 @@ export default function SolarSystemScale() {
       // true scale speed — driven via ref, same pattern as the progress bar
       if (photonRef.current && startTimeRef.current) {
         const lightPx = LIGHT_PX_PER_SEC * ((now - startTimeRef.current) / 1000);
-        photonRef.current.style.transform = `translate(${lightPx}px, -50%)`;
+        photonRef.current.style.transform = vertical
+          ? `translate(-50%, ${lightPx}px)`
+          : `translate(${lightPx}px, -50%)`;
         photonRef.current.style.opacity = "1";
       }
 
@@ -663,12 +700,12 @@ export default function SolarSystemScale() {
     };
     rafRef.current = requestAnimationFrame(loop);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, []);
+  }, [vertical]);
 
-  // Convert vertical mouse wheel to horizontal scroll
+  // Convert vertical mouse wheel to horizontal scroll (horizontal mode only)
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    if (!el || vertical) return;
     const onWheel = (e) => {
       if (e.ctrlKey) return; // pinch / ctrl+wheel zoom must stay zoom
       if (e.deltaY !== 0) {
@@ -680,7 +717,7 @@ export default function SolarSystemScale() {
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, []);
+  }, [vertical]);
 
   // Clamp scroll so end card centers in viewport
   useEffect(() => {
@@ -688,14 +725,16 @@ export default function SolarSystemScale() {
     if (!el) return;
     const onScroll = () => {
       const endCardCenter = auToPx(HELIOPAUSE_AU) + 800 + (END_CARD_WIDTH - 1200) / 2;
-      const maxScroll = endCardCenter - el.clientWidth / 2;
-      if (el.scrollLeft > maxScroll) {
+      const maxScroll = endCardCenter - (vertical ? el.clientHeight : el.clientWidth) / 2;
+      if (vertical) {
+        if (el.scrollTop > maxScroll) el.scrollTop = maxScroll;
+      } else if (el.scrollLeft > maxScroll) {
         el.scrollLeft = maxScroll;
       }
     };
     el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [vertical]);
 
   // Click/drag on progress bar to navigate
   useEffect(() => {
@@ -707,8 +746,9 @@ export default function SolarSystemScale() {
       const rect = bar.getBoundingClientRect();
       const fraction = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
       const endCardCenter = auToPx(HELIOPAUSE_AU) + 800 + (END_CARD_WIDTH - 1200) / 2;
-      const maxScroll = endCardCenter - el.clientWidth / 2;
-      el.scrollLeft = fraction * maxScroll;
+      const maxScroll = endCardCenter - (vertical ? el.clientHeight : el.clientWidth) / 2;
+      if (vertical) el.scrollTop = fraction * maxScroll;
+      else el.scrollLeft = fraction * maxScroll;
     };
 
     const onPointerDown = (e) => {
@@ -738,7 +778,7 @@ export default function SolarSystemScale() {
       bar.removeEventListener("pointerup", onPointerUp);
       bar.removeEventListener("pointercancel", onPointerUp);
     };
-  }, []);
+  }, [vertical]);
 
   // Close modal on Esc
   useEffect(() => {
@@ -769,11 +809,11 @@ export default function SolarSystemScale() {
   };
 
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "#000", color: "#fff", fontFamily: "'Space Grotesk', sans-serif", overflow: "hidden", position: "relative" }}>
+    <div style={{ width: "100%", height: "100%", background: "#000", color: "#fff", fontFamily: "'Space Grotesk', sans-serif", overflow: "hidden", position: "relative" }}>
       <style>{`
         @keyframes pulse { 0%,100%{opacity:0.3;transform:translate(-50%,-50%) scale(1)} 50%{opacity:0.7;transform:translate(-50%,-50%) scale(1.3)} }
         @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        ::-webkit-scrollbar{height:4px} ::-webkit-scrollbar-track{background:#000} ::-webkit-scrollbar-thumb{background:#ffffff12;border-radius:2px}
+        ::-webkit-scrollbar{height:4px;width:4px} ::-webkit-scrollbar-track{background:#000} ::-webkit-scrollbar-thumb{background:#ffffff12;border-radius:2px}
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         }
@@ -844,18 +884,24 @@ export default function SolarSystemScale() {
       <div
         ref={containerRef}
         tabIndex={0}
-        aria-label="Solar system scale model. Scroll right to travel from the Sun toward interstellar space."
+        aria-label={`Solar system scale model. Scroll ${vertical ? "down" : "right"} to travel from the Sun toward interstellar space.`}
         style={{
           width: "100%", height: "100%",
-          overflowX: "auto", overflowY: "hidden",
+          overflowX: vertical ? "hidden" : "auto",
+          overflowY: vertical ? "auto" : "hidden",
           position: "relative", zIndex: 1,
           outline: "none"
         }}
       >
-        <div style={{ width: TOTAL_WIDTH, height: "100%", position: "relative" }}>
+        <div style={vertical
+          ? { width: "100%", height: TOTAL_WIDTH, position: "relative" }
+          : { width: TOTAL_WIDTH, height: "100%", position: "relative" }}>
 
           {/* Intro text */}
-          <div style={{
+          <div style={vertical ? {
+            position: "absolute", top: 110, left: "50%", transform: "translateX(-50%)",
+            width: "84vw", maxWidth: 420, textAlign: "center"
+          } : {
             position: "absolute", left: 40, top: "50%", transform: "translateY(-50%)",
             width: LEFT_PAD - 120, textAlign: "right", paddingRight: 40
           }}>
@@ -867,12 +913,17 @@ export default function SolarSystemScale() {
               Every gap is the actual emptiness of space.
             </div>
             <div style={{ fontSize: 11, color: "#ffffff22", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
-              scroll →
+              {vertical ? "scroll ↓" : "scroll →"}
             </div>
           </div>
 
           {/* Center axis line */}
-          <div style={{
+          <div style={vertical ? {
+            position: "absolute", top: LEFT_PAD, bottom: END_CARD_WIDTH,
+            left: "50%", width: 1,
+            background: "linear-gradient(180deg, #FDB81322, #ffffff08 5%, #ffffff04 50%, #ffffff02)",
+            transform: "translateX(-50%)"
+          } : {
             position: "absolute", left: LEFT_PAD, right: END_CARD_WIDTH,
             top: "50%", height: 1,
             background: "linear-gradient(90deg, #FDB81322, #ffffff08 5%, #ffffff04 50%, #ffffff02)",
@@ -882,8 +933,9 @@ export default function SolarSystemScale() {
           {/* Light, at true scale speed: a photon that left the Sun the moment
               you first scrolled. It covers ~23.5 px per second — you will outrun it. */}
           <div ref={photonRef} style={{
-            position: "absolute", left: LEFT_PAD, top: "50%",
-            transform: "translate(0px, -50%)",
+            position: "absolute",
+            ...(vertical ? { top: LEFT_PAD, left: "50%" } : { left: LEFT_PAD, top: "50%" }),
+            transform: vertical ? "translate(-50%, 0px)" : "translate(0px, -50%)",
             opacity: 0, zIndex: 9, pointerEvents: "none",
           }}>
             <div style={{
@@ -902,7 +954,14 @@ export default function SolarSystemScale() {
 
           {/* Regions */}
           {REGIONS.map(r => (
-            <div key={r.id} style={{
+            <div key={r.id} style={vertical ? {
+              position: "absolute",
+              top: auToPx(r.au1), height: auToPx(r.au2) - auToPx(r.au1),
+              left: "40%", width: "20%",
+              background: `linear-gradient(180deg, ${r.color}08, ${r.color}05, ${r.color}08)`,
+              borderLeft: `1px solid ${r.color}12`,
+              borderRight: `1px solid ${r.color}12`,
+            } : {
               position: "absolute",
               left: auToPx(r.au1), width: auToPx(r.au2) - auToPx(r.au1),
               top: "40%", height: "20%",
@@ -926,7 +985,11 @@ export default function SolarSystemScale() {
           {BOUNDARIES.map(b => (
             <div key={b.id}
               onClick={() => setSelectedId(b.id)}
-              style={{
+              style={vertical ? {
+                position: "absolute", top: auToPx(b.au), left: "10%", width: "80%",
+                borderTop: `1px dashed ${b.color}44`, cursor: "pointer", zIndex: 8,
+                paddingTop: 8
+              } : {
                 position: "absolute", left: auToPx(b.au), top: "20%", height: "60%",
                 borderLeft: `1px dashed ${b.color}44`, cursor: "pointer", zIndex: 8,
                 paddingLeft: 8
@@ -951,6 +1014,7 @@ export default function SolarSystemScale() {
             <ObjectMarker
               key={obj.id}
               obj={obj}
+              vertical={vertical}
               onClick={() => setSelectedId(obj.id)}
               crossingTime={getCrossing(obj.id)}
               prevCrossingTime={getPrevCrossing(obj.id)}
@@ -960,16 +1024,20 @@ export default function SolarSystemScale() {
 
           {/* Void texts */}
           {VOID_TEXTS.map((vt, i) => (
-            <div key={i} style={{
+            <div key={i} style={vertical ? {
+              position: "absolute", top: auToPx(vt.au), left: "50%",
+              transform: "translate(-50%, -50%)",
+              textAlign: "center", width: "86vw", maxWidth: 520
+            } : {
               position: "absolute", left: auToPx(vt.au), top: "50%",
               transform: "translate(-50%, -50%)",
               textAlign: "center", maxWidth: 520, padding: "0 20px"
             }}>
-              <div style={{ fontSize: 24, color: "#ffffff66", lineHeight: 1.6, fontWeight: 300, fontStyle: "italic" }}>
+              <div style={{ fontSize: vertical ? 20 : 24, color: "#ffffff66", lineHeight: 1.6, fontWeight: 300, fontStyle: "italic" }}>
                 {vt.text}
               </div>
               {vt.sub && (
-                <div style={{ fontSize: 16, color: "#ffffff44", lineHeight: 1.5, marginTop: 12 }}>
+                <div style={{ fontSize: vertical ? 14 : 16, color: "#ffffff44", lineHeight: 1.5, marginTop: 12 }}>
                   {vt.sub}
                 </div>
               )}
@@ -996,7 +1064,13 @@ export default function SolarSystemScale() {
           ))}
 
           {/* ════════ END CARD ════════ */}
-          <div style={{
+          <div style={vertical ? {
+            position: "absolute",
+            top: auToPx(HELIOPAUSE_AU) + 800,
+            left: 0, right: 0,
+            height: END_CARD_WIDTH - 1200,
+            display: "flex", alignItems: "center", justifyContent: "center"
+          } : {
             position: "absolute",
             left: auToPx(HELIOPAUSE_AU) + 800,
             top: 0, bottom: 0,
@@ -1004,7 +1078,7 @@ export default function SolarSystemScale() {
             display: "flex", alignItems: "center", justifyContent: "center"
           }}>
             <div style={{
-              maxWidth: 560, width: "100%", padding: "40px",
+              maxWidth: 560, width: "100%", padding: vertical ? "32px 22px" : "40px",
               animation: reachedEnd ? "fadeIn 1s ease" : "none",
               opacity: reachedEnd ? 1 : 0.15
             }}>
