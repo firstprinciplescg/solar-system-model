@@ -20,6 +20,18 @@ const LIGHT_PX_PER_SEC = LIGHT_KMS / EARTH_DIA_KM; // at this scale, light crawl
 const LIGHT_SEC_PER_AU = AU_KM / LIGHT_KMS; // ~499 s for light to cross 1 AU
 const JUMP_PX_PER_FRAME = 8000; // a single-frame scroll delta this large is a jump, not scrolling
 
+// Live spacecraft positions: anchor to a published milestone (AU at a date)
+// plus the craft's asymptotic recession rate, so the data can never go stale
+const YEAR_MS = 365.25 * 86400 * 1000;
+const auNow = (au, isoDate, auPerYear) =>
+  au + auPerYear * ((Date.now() - new Date(isoDate).getTime()) / YEAR_MS);
+
+const NH_AU = Math.round(auNow(50.0, "2021-04-17", 2.9) * 10) / 10; // New Horizons: 50 AU milestone
+const P11_NOW = Math.round(auNow(44, "1995-09-30", 2.36));  // Pioneer 11, silent since last contact
+const P10_NOW = Math.round(auNow(80, "2003-01-23", 2.51));  // Pioneer 10, silent since last contact
+const V1_AU = Math.round(auNow(121.6, "2012-08-25", 3.57)); // Voyager 1: heliopause crossing
+const V2_AU = Math.round(auNow(119.0, "2018-11-05", 3.16)); // Voyager 2: heliopause crossing
+
 // ══════════════════════════════════════════════════════════
 // SOLAR SYSTEM DATA
 // ══════════════════════════════════════════════════════════
@@ -123,8 +135,8 @@ const BODIES = [
       "It has two small moons, Hi'iaka and Namaka, named after the Hawaiian goddess Haumea's daughters.",
       "Haumea's ring was discovered during a stellar occultation in 2017 — making it the first known trans-Neptunian object with a ring system.",
     ]},
-  { id: "pioneer11", name: "Pioneer 11", type: "spacecraft", au: 44, diam: 0, color: "#C0B0A0",
-    desc: "Launched April 5, 1973. The first spacecraft to fly past Saturn. Last contact was September 30, 1995, when it was at roughly this distance — 44 AU. Its power source failed; it's still drifting outward in silence, now around 120 AU from the Sun.",
+  { id: "pioneer11", name: "Pioneer 11", type: "spacecraft", au: 44, auPerYear: 2.36, diam: 0, color: "#C0B0A0",
+    desc: `Launched April 5, 1973. The first spacecraft to fly past Saturn. Last contact was September 30, 1995, when it was at roughly this distance — 44 AU. Its power source failed; it's still drifting outward in silence, now around ${P11_NOW} AU from the Sun.`,
     facts: [
       "Pioneer 11 flew through Saturn's ring plane in 1979 — a risky scouting maneuver that proved the path was safe for the Voyagers to follow.",
       "It carries the Pioneer Plaque: a gold-anodized diagram meant for any extraterrestrials who might find it, showing a man, a woman, and Earth's location in the galaxy.",
@@ -137,8 +149,8 @@ const BODIES = [
       "Unlike Pluto, Makemake appears to have no significant atmosphere — a stellar occultation in 2011 showed no atmospheric signature.",
       "Its surface is covered in frozen methane and ethane, which give it a reddish-brown color similar to Pluto.",
     ]},
-  { id: "new_horizons", name: "New Horizons", type: "spacecraft", au: 62, diam: 0, color: "#B0C8D8",
-    desc: "Launched January 19, 2006. The fastest spacecraft ever sent from Earth. Flew past Pluto in July 2015 and the Kuiper Belt object Arrokoth in 2019. Still transmitting from here, studying the outer heliosphere.",
+  { id: "new_horizons", name: "New Horizons", type: "spacecraft", au: NH_AU, auPerYear: 2.9, diam: 0, color: "#B0C8D8",
+    desc: `Launched January 19, 2006. The fastest spacecraft ever sent from Earth. Flew past Pluto in July 2015 and the Kuiper Belt object Arrokoth in 2019. Still transmitting from here — ${NH_AU} AU out today — studying the outer heliosphere.`,
     facts: [
       "New Horizons covered the Earth-Moon distance in 9 hours. Apollo 11 took 3 days to cover the same ground.",
       "It's the only spacecraft to have visited Pluto and a Kuiper Belt object up close — and the Arrokoth encounter was the most distant close flyby in history.",
@@ -151,8 +163,8 @@ const BODIES = [
       "Its surface is one of the most reflective in the solar system, likely coated in a thin layer of frozen nitrogen that re-freezes from its atmosphere.",
       "At its farthest, Eris reaches 97.5 AU from the Sun. Its 559-year orbit takes it nearly to the edge of the scattered disc.",
     ]},
-  { id: "pioneer10", name: "Pioneer 10", type: "spacecraft", au: 80, diam: 0, color: "#C0B0A0",
-    desc: "Launched March 2, 1972. The first spacecraft to cross the asteroid belt and the first to fly past Jupiter. Last contact was January 23, 2003, when it was at roughly this distance — 80 AU from Earth. It's still out there, silent, now around 139 AU from the Sun.",
+  { id: "pioneer10", name: "Pioneer 10", type: "spacecraft", au: 80, auPerYear: 2.51, diam: 0, color: "#C0B0A0",
+    desc: `Launched March 2, 1972. The first spacecraft to cross the asteroid belt and the first to fly past Jupiter. Last contact was January 23, 2003, when it was at roughly this distance — 80 AU from Earth. It's still out there, silent, now around ${P10_NOW} AU from the Sun.`,
     facts: [
       "Pioneer 10 was the first human-made object ever placed on a trajectory to leave the solar system.",
       "It's heading toward the star Aldebaran in Taurus — a journey of about 2 million years.",
@@ -201,17 +213,17 @@ const VOID_TEXTS = [
   { au: 82, text: "Almost everything humanity has ever sent into space is behind you now." },
   { au: 100, text: "Light takes nearly 14 hours to travel this far from the Sun." },
   { au: 110, text: "You're in the heliosheath.", sub: "Solar wind piles up here, compressed against interstellar space." },
-  { au: 118, text: "Voyager 1 crossed this edge in 2012.", sub: "It's now roughly 50 AU beyond here — the farthest human-made object, still broadcasting back at 22 watts." },
+  { au: 118, text: "Voyager 1 crossed this edge in 2012.", sub: `It's now roughly ${V1_AU - 118} AU beyond here — the farthest human-made object, still broadcasting back at 22 watts.` },
 ];
 
 const PROJECTIONS = [
-  { name: "Voyager 2", au: 143, note: "In interstellar space — launched 1977",
+  { name: "Voyager 2", au: V2_AU, note: "In interstellar space — launched 1977",
     facts: [
       "Voyager 2 crossed the heliopause on November 5, 2018 — six years after Voyager 1, and on a completely different trajectory, confirming the boundary is real.",
       "It's the only spacecraft ever to visit all four giant planets: Jupiter, Saturn, Uranus, and Neptune.",
       "It carries a Golden Record of Earth's sounds and images — a message for whoever might find it over the next billion years.",
     ]},
-  { name: "Voyager 1", au: 173, note: "Farthest human-made object — launched 1977",
+  { name: "Voyager 1", au: V1_AU, note: "Farthest human-made object — launched 1977",
     facts: [
       "Voyager 1 became the first spacecraft to enter interstellar space when it crossed the heliopause on August 25, 2012.",
       "Its radio signal, traveling at the speed of light, takes over 23 hours to reach Earth.",
@@ -476,6 +488,9 @@ const InfoModal = ({ obj, crossingTime, prevCrossingTime, startTime, onClose }) 
             <div><span style={{ color: "#ffffff44" }}>AU:</span> {dist.au}</div>
             <div><span style={{ color: "#ffffff44" }}>km:</span> {dist.km}</div>
             <div><span style={{ color: "#ffffff44" }}>mi:</span> {dist.mi}</div>
+            {obj.auPerYear && (
+              <div><span style={{ color: "#ffffff44" }}>speed:</span> {obj.auPerYear} AU/year — about {Math.round(obj.auPerYear * PX_PER_AU / 365.25)} pixels per day here</div>
+            )}
           </div>
         </div>
 
