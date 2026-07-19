@@ -182,7 +182,6 @@ const BOUNDARIES = [
 const ALL_POSITIONED = [...BODIES, ...BOUNDARIES].sort((a, b) => a.au - b.au);
 
 const VOID_TEXTS = [
-  { au: 0.5, text: "A comet is passing through here this week.", sub: "C/2025 R3 (PanSTARRS) — naked-eye visible before dawn from the Northern Hemisphere, briefly, before the Sun's glare swallows it.", link: { url: "https://theskylive.com/c2025r3-info", label: "Find it in your sky →" } },
   { au: 1.3, text: "Your entire world was that single pixel.", sub: "Everyone you've ever known. Every ocean, mountain, city, and war." },
   { au: 2.5, text: "You're crossing the asteroid belt.", sub: "If you gathered every asteroid here, they'd mass less than 4% of our Moon." },
   { au: 3.8, text: "Light from the Sun takes 30 minutes to reach this far." },
