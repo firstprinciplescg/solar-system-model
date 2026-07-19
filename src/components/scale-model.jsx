@@ -808,6 +808,25 @@ export default function SolarSystemScale() {
     return px / avgSpeed;
   };
 
+  const [shared, setShared] = useState(false);
+  const shareJourney = async () => {
+    const xc = avgSpeed / LIGHT_PX_PER_SEC;
+    const xcDisplay = xc >= 10 ? Math.round(xc) : xc.toFixed(1);
+    const text = paceIsReal
+      ? `I scrolled the solar system at true scale — Earth = 1 pixel. ${HELIOPAUSE_AU} AU in ${formatTime(endTime)}, averaging ${xcDisplay}× the speed of light. It still felt endless.`
+      : "I crossed the solar system at true scale — Earth = 1 pixel. The emptiness is the point.";
+    const url = "https://solar-system-sage-five.vercel.app/";
+    try {
+      if (navigator.share) {
+        await navigator.share({ text, url });
+      } else {
+        await navigator.clipboard.writeText(`${text} ${url}`);
+        setShared(true);
+        setTimeout(() => setShared(false), 2500);
+      }
+    } catch { /* user dismissed the share sheet */ }
+  };
+
   return (
     <div style={{ width: "100%", height: "100%", background: "#000", color: "#fff", fontFamily: "'Space Grotesk', sans-serif", overflow: "hidden", position: "relative" }}>
       <style>{`
@@ -1209,6 +1228,16 @@ export default function SolarSystemScale() {
                       Want to revisit anything? Click or drag the progress bar at the top of the screen to jump to any point in the model.
                     </div>
                   </div>
+
+                  <button onClick={shareJourney} style={{
+                    marginTop: 16, width: "100%", padding: "13px",
+                    background: "#FDB81310", border: "1px solid #FDB81333",
+                    borderRadius: 8, color: "#FDB813cc", fontSize: 12,
+                    fontFamily: "'JetBrains Mono', monospace", cursor: "pointer",
+                    letterSpacing: 2, textTransform: "uppercase"
+                  }}>
+                    {shared ? "Copied to clipboard ✓" : "Share your journey"}
+                  </button>
 
                   <div style={{
                     marginTop: 32, padding: "24px",
