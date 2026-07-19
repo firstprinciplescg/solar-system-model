@@ -15,6 +15,11 @@ const TOTAL_WIDTH = LEFT_PAD + Math.ceil(HELIOPAUSE_AU * PX_PER_AU) + END_CARD_W
 const auToPx = (au) => LEFT_PAD + Math.round(au * PX_PER_AU);
 const kmToPxDia = (km) => km / EARTH_DIA_KM;
 
+const LIGHT_KMS = 299792.458;
+const LIGHT_PX_PER_SEC = LIGHT_KMS / EARTH_DIA_KM; // at this scale, light crawls at ~23.5 px/s
+const LIGHT_SEC_PER_AU = AU_KM / LIGHT_KMS; // ~499 s for light to cross 1 AU
+const JUMP_PX_PER_FRAME = 8000; // a single-frame scroll delta this large is a jump, not scrolling
+
 // ══════════════════════════════════════════════════════════
 // SOLAR SYSTEM DATA
 // ══════════════════════════════════════════════════════════
@@ -527,13 +532,33 @@ export default function SolarSystemScale() {
   const rafRef = useRef(null);
   const lastAURef = useRef(0);
   const lastTimeUpdate = useRef(0);
+  const lastSxRef = useRef(0);
+  const organicPxRef = useRef(0);
+  const skippedRef = useRef(new Set());
+  const jumpActiveRef = useRef(false);
+  const usedJumpRef = useRef(false);
+  const paceRef = useRef(null);
+  const endAtRef = useRef(null);
+  const photonRef = useRef(null);
 
   const [currentAU, setCurrentAU] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
   const [reachedEnd, setReachedEnd] = useState(false);
   const [expandedProjection, setExpandedProjection] = useState(null);
+  const [usedJump, setUsedJump] = useState(false);
   const [, forceUpdate] = useState(0);
+
+  // Always start at the Sun: browser scroll restoration would fast-forward
+  // the journey on reload and corrupt every crossing time.
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
+    const el = containerRef.current;
+    if (el) {
+      el.scrollLeft = 0;
+      el.focus({ preventScroll: true });
+    }
+  }, []);
 
   // Animation loop
   useEffect(() => {
@@ -542,8 +567,18 @@ export default function SolarSystemScale() {
       if (!el) { rafRef.current = requestAnimationFrame(loop); return; }
 
       const sx = el.scrollLeft;
-      const au = Math.max(0, (sx - LEFT_PAD) / PX_PER_AU);
       const vw = el.clientWidth;
+      const centerX = sx + vw / 2;
+      // AU at viewport center — the same reference point crossings use
+      const au = Math.max(0, (centerX - LEFT_PAD) / PX_PER_AU);
+      const now = Date.now();
+
+      // Jumps (progress-bar drags, End key) must not count as scrolling:
+      // crossing times and the end-card pace only mean anything if they
+      // reflect distance the user actually traveled.
+      const dx = sx - lastSxRef.current;
+      lastSxRef.current = sx;
+      const isJump = jumpActiveRef.current || Math.abs(dx) > JUMP_PX_PER_FRAME;
 
       // Update progress bar directly (bypasses React for smooth animation)
       if (progressRef.current) {
@@ -552,7 +587,23 @@ export default function SolarSystemScale() {
 
       // Start timer on first meaningful scroll
       if (sx > 10 && !startTimeRef.current) {
-        startTimeRef.current = Date.now();
+        startTimeRef.current = now;
+      }
+
+      if (dx !== 0 && startTimeRef.current) {
+        if (isJump) {
+          if (!usedJumpRef.current) { usedJumpRef.current = true; setUsedJump(true); }
+        } else {
+          organicPxRef.current += Math.abs(dx);
+        }
+      }
+
+      // The photon released from the Sun when the journey began, moving at
+      // true scale speed — driven via ref, same pattern as the progress bar
+      if (photonRef.current && startTimeRef.current) {
+        const lightPx = LIGHT_PX_PER_SEC * ((now - startTimeRef.current) / 1000);
+        photonRef.current.style.transform = `translate(${lightPx}px, -50%)`;
+        photonRef.current.style.opacity = "1";
       }
 
       // Throttled AU update
@@ -562,24 +613,34 @@ export default function SolarSystemScale() {
       }
 
       // Throttled time update (1/sec)
-      const now = Date.now();
       if (startTimeRef.current && now - lastTimeUpdate.current > 500) {
         lastTimeUpdate.current = now;
         setElapsedTime((now - startTimeRef.current) / 1000);
       }
 
-      // Check object crossings
-      const centerX = sx + vw / 2;
+      // Check object crossings; objects passed during a jump stay untimed
       for (const obj of ALL_POSITIONED) {
-        const objX = auToPx(obj.au);
-        if (centerX >= objX && !crossingsRef.current.has(obj.id) && startTimeRef.current) {
-          crossingsRef.current.set(obj.id, (now - startTimeRef.current) / 1000);
-          forceUpdate(n => n + 1);
+        if (crossingsRef.current.has(obj.id) || skippedRef.current.has(obj.id)) continue;
+        if (centerX >= auToPx(obj.au) && startTimeRef.current) {
+          if (isJump) {
+            skippedRef.current.add(obj.id);
+          } else {
+            const t = (now - startTimeRef.current) / 1000;
+            crossingsRef.current.set(obj.id, t);
+            if (obj.id === "heliopause" && !paceRef.current) {
+              paceRef.current = { px: organicPxRef.current, sec: t };
+            }
+            forceUpdate(n => n + 1);
+          }
         }
       }
 
       // End detection
       if (sx + vw >= TOTAL_WIDTH - END_CARD_WIDTH + 200 && startTimeRef.current) {
+        if (endAtRef.current == null) {
+          endAtRef.current = (now - startTimeRef.current) / 1000;
+          if (!paceRef.current) paceRef.current = { px: organicPxRef.current, sec: endAtRef.current };
+        }
         setReachedEnd(true);
       }
 
@@ -594,9 +655,12 @@ export default function SolarSystemScale() {
     const el = containerRef.current;
     if (!el) return;
     const onWheel = (e) => {
+      if (e.ctrlKey) return; // pinch / ctrl+wheel zoom must stay zoom
       if (e.deltaY !== 0) {
         e.preventDefault();
-        el.scrollLeft += e.deltaY;
+        // deltaMode 1 = lines, 2 = pages (line-mode wheels would otherwise crawl)
+        const unit = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? el.clientWidth : 1;
+        el.scrollLeft += e.deltaY * unit;
       }
     };
     el.addEventListener("wheel", onWheel, { passive: false });
@@ -632,27 +696,32 @@ export default function SolarSystemScale() {
       el.scrollLeft = fraction * maxScroll;
     };
 
-    const onMouseDown = (e) => {
+    const onPointerDown = (e) => {
       e.preventDefault();
+      bar.setPointerCapture(e.pointerId);
       isDraggingProgress.current = true;
+      jumpActiveRef.current = true;
       jumpToPosition(e.clientX);
     };
-    const onMouseMove = (e) => {
+    const onPointerMove = (e) => {
       if (!isDraggingProgress.current) return;
       e.preventDefault();
       jumpToPosition(e.clientX);
     };
-    const onMouseUp = () => {
+    const onPointerUp = () => {
       isDraggingProgress.current = false;
+      jumpActiveRef.current = false;
     };
 
-    bar.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    bar.addEventListener("pointerdown", onPointerDown);
+    bar.addEventListener("pointermove", onPointerMove);
+    bar.addEventListener("pointerup", onPointerUp);
+    bar.addEventListener("pointercancel", onPointerUp);
     return () => {
-      bar.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      bar.removeEventListener("pointerdown", onPointerDown);
+      bar.removeEventListener("pointermove", onPointerMove);
+      bar.removeEventListener("pointerup", onPointerUp);
+      bar.removeEventListener("pointercancel", onPointerUp);
     };
   }, []);
 
@@ -673,9 +742,12 @@ export default function SolarSystemScale() {
 
   const selectedObj = selectedId ? [...BODIES, ...BOUNDARIES].find(o => o.id === selectedId) : null;
 
-  // Projection calculation
-  const endTime = crossingsRef.current.get("heliopause") || elapsedTime;
-  const avgSpeed = endTime > 0 ? (HELIOPAUSE_AU * PX_PER_AU) / endTime : 400; // px/sec, fallback to 400
+  // Projection calculation — pace comes from distance actually scrolled,
+  // not distance jumped, so "at your pace" stays honest
+  const endTime = crossingsRef.current.get("heliopause") ?? endAtRef.current ?? elapsedTime;
+  const pace = paceRef.current;
+  const paceIsReal = !!(pace && pace.px > 20000 && pace.sec > 5);
+  const avgSpeed = paceIsReal ? pace.px / pace.sec : 400; // px/sec, fallback to 400
   const projectTime = (targetAU) => {
     const px = targetAU * PX_PER_AU;
     return px / avgSpeed;
@@ -719,6 +791,11 @@ export default function SolarSystemScale() {
           <div style={{ fontSize: 10, color: "#ffffff66", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 2, textTransform: "uppercase" }}>
             Earth = 1 pixel
           </div>
+          {startTimeRef.current && (
+            <div style={{ fontSize: 9, color: "#ffffff40", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1, marginTop: 5 }}>
+              light that left with you: {(elapsedTime / LIGHT_SEC_PER_AU).toFixed(2)} AU
+            </div>
+          )}
         </div>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 18, fontWeight: 600, color: "#ffffffcc", fontFamily: "'JetBrains Mono', monospace", letterSpacing: 1 }}>
@@ -740,7 +817,7 @@ export default function SolarSystemScale() {
       {/* ── Progress bar ── */}
       <div ref={progressBarRef} style={{
         position: "fixed", top: 0, left: 0, right: 0, height: 6, zIndex: 51,
-        background: "#ffffff0a", cursor: "pointer"
+        background: "#ffffff0a", cursor: "pointer", touchAction: "none"
       }}>
         <div ref={progressRef} style={{
           height: "100%", background: `linear-gradient(90deg, #FDB813, #5B9BD5, #3F54BA)`,
@@ -751,10 +828,13 @@ export default function SolarSystemScale() {
       {/* ── Main scroll container ── */}
       <div
         ref={containerRef}
+        tabIndex={0}
+        aria-label="Solar system scale model. Scroll right to travel from the Sun toward interstellar space."
         style={{
           width: "100%", height: "100%",
           overflowX: "auto", overflowY: "hidden",
-          position: "relative", zIndex: 1
+          position: "relative", zIndex: 1,
+          outline: "none"
         }}
       >
         <div style={{ width: TOTAL_WIDTH, height: "100%", position: "relative" }}>
@@ -783,6 +863,27 @@ export default function SolarSystemScale() {
             background: "linear-gradient(90deg, #FDB81322, #ffffff08 5%, #ffffff04 50%, #ffffff02)",
             transform: "translateY(-50%)"
           }} />
+
+          {/* Light, at true scale speed: a photon that left the Sun the moment
+              you first scrolled. It covers ~23.5 px per second — you will outrun it. */}
+          <div ref={photonRef} style={{
+            position: "absolute", left: LEFT_PAD, top: "50%",
+            transform: "translate(0px, -50%)",
+            opacity: 0, zIndex: 9, pointerEvents: "none",
+          }}>
+            <div style={{
+              width: 3, height: 3, borderRadius: "50%",
+              background: "#FFF8E1",
+              boxShadow: "0 0 6px #FFF8E1cc, 0 0 14px #FDB81366",
+            }} />
+            <div style={{
+              position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)",
+              fontSize: 9, color: "#ffffff33", fontFamily: "'JetBrains Mono', monospace",
+              letterSpacing: 1, whiteSpace: "nowrap",
+            }}>
+              light · real speed
+            </div>
+          </div>
 
           {/* Regions */}
           {REGIONS.map(r => (
@@ -924,8 +1025,18 @@ export default function SolarSystemScale() {
                       {formatTime(endTime)}
                     </div>
                     <div style={{ fontSize: 14, color: "#ffffff55" }}>
-                      to scroll {HELIOPAUSE_AU} AU at an average of {(HELIOPAUSE_AU / endTime * 60).toFixed(1)} AU/min
+                      {usedJump
+                        ? (paceIsReal
+                            ? <>to reach the edge, jumps included — pace measured from the {Math.round(pace.px / PX_PER_AU)} AU you scrolled yourself</>
+                            : <>to reach the edge, mostly by jumping — the projections below use a typical scrolling pace</>)
+                        : <>to scroll {HELIOPAUSE_AU} AU at an average of {(avgSpeed / PX_PER_AU * 60).toFixed(1)} AU/min</>}
                     </div>
+                    {paceIsReal && (
+                      <div style={{ fontSize: 13, color: "#ffffff44", marginTop: 10, lineHeight: 1.6 }}>
+                        You averaged {(() => { const xc = avgSpeed / LIGHT_PX_PER_SEC; return xc >= 10 ? Math.round(xc) : xc.toFixed(1); })()}× the speed of light.
+                        A photon needs {formatTime(HELIOPAUSE_AU * LIGHT_SEC_PER_AU)} to make this same trip.
+                      </div>
+                    )}
                   </div>
 
                   <div style={{
